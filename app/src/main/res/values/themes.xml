@@ -14,4 +14,25 @@
         <item name="android:windowLightStatusBar">true</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="AppBarLayout">
+        <item name="android:background">@color/white</item>
+    </style>
+
+    <style name="BottomNavigation">
+        <item name="android:background">@color/black_200</item>
+        <item name="itemIconTint">@drawable/bottom_nav_icon_color</item>
+        <item name="itemTextColor">@drawable/bottom_nav_icon_color</item>
+    </style>
+
+
+    <style name="Text">
+        <item name="android:textColor">@color/black_200</item>
+    </style>
+
+    <style name="Text.ToolbarTitlePrimary">
+        <item name="android:fontFamily">@font/product_sans_bold</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:textSize">24sp</item>
+    </style>
 </resources>

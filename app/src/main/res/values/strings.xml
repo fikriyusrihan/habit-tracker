@@ -7,4 +7,9 @@
     <string name="settings">Settings</string>
     <string name="progress">Progress</string>
     <string name="journal">Journal</string>
+    <string name="today">Today</string>
+    <string name="my_journal">My Journal</string>
+    <string name="this_month">This month</string>
+    <string name="your_stats">Your Stats</string>
+    <string name="personal">Personal</string>
 </resources>
