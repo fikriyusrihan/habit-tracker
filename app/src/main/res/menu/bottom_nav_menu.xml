@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_journal"
+        android:icon="@drawable/ic_baseline_book_24"
+        android:title="@string/journal" />
+
+    <item
+        android:id="@+id/navigation_progress"
+        android:icon="@drawable/ic_baseline_pie_chart_24"
+        android:title="@string/progress" />
+
+    <item
+        android:id="@+id/navigation_settings"
+        android:icon="@drawable/ic_baseline_settings_24"
+        android:title="@string/settings" />
+
+</menu>
