@@ -14,6 +14,10 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="SplashTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_bg_night</item>
+    </style>
+
     <style name="AppBarLayout">
         <item name="android:background">@color/black_200</item>
     </style>

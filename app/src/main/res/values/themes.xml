@@ -15,6 +15,10 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="SplashTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_bg</item>
+    </style>
+
     <style name="AppBarLayout">
         <item name="android:background">@color/white</item>
     </style>
@@ -24,7 +28,6 @@
         <item name="itemIconTint">@drawable/bottom_nav_icon_color</item>
         <item name="itemTextColor">@drawable/bottom_nav_icon_color</item>
     </style>
-
 
     <style name="Text">
         <item name="android:textColor">@color/black_200</item>
