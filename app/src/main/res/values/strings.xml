@@ -19,4 +19,25 @@
     <string name="share_app">Share App</string>
     <string name="feedback">Feedback</string>
     <string name="share">Share</string>
+    <string name="progress_information_title">Information about your progress</string>
+    <string name="progress_information_message">This page show your progress as you build up habits.\n\nMark all of today\'s habits as "done" to get a perfect day.\n\nAim for as many of these perfect days as you can to build the longest streak.</string>
+    <string name="progress_information_ok">I\'ll try my best</string>
+    <string name="information">Information</string>
+    <string name="dummy_7">7</string>
+    <string name="dummy_days">days</string>
+    <string name="your_current_streak">Your current streak</string>
+    <string name="trophy">Trophy</string>
+    <string name="keep_it_up">Keep it up</string>
+    <string name="calendar">Calendar</string>
+    <string name="longest_streak">Longest streak</string>
+    <string name="total_habit_completed">Total habit completed</string>
+    <string name="dummy_times">times</string>
+    <string name="habit_completion_rate">Habit completion rate</string>
+    <string name="dummy_100">100%</string>
+    <string name="dummy_20">2.0</string>
+    <string name="average_per_daily">Average per daily</string>
+    <string name="dummy_4">4</string>
+    <string name="check">Check</string>
+    <string name="graph">Graph</string>
+    <string name="bar_chart">Bar Chart</string>
 </resources>

@@ -5,6 +5,8 @@
       <map>
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/bottom_nav_icon_color.xml" value="0.193" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/button_nav_icon_color_night.xml" value="0.1" />
+        <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/card_gradient_color.xml" value="0.2225" />
+        <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/card_progress_radius.xml" value="0.2225" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/ic_baseline_book_24.xml" value="0.193" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.193" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/splash_bg.xml" value="0.2225" />
