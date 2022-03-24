@@ -12,4 +12,11 @@
     <string name="this_month">This month</string>
     <string name="your_stats">Your Stats</string>
     <string name="personal">Personal</string>
+    <string name="app_behaviour">App Behaviour</string>
+    <string name="others">Others</string>
+    <string name="notification">Notification</string>
+    <string name="send_feedback">Send Feedback</string>
+    <string name="share_app">Share App</string>
+    <string name="feedback">Feedback</string>
+    <string name="share">Share</string>
 </resources>
