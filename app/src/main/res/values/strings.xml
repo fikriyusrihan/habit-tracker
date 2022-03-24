@@ -40,4 +40,6 @@
     <string name="check">Check</string>
     <string name="graph">Graph</string>
     <string name="bar_chart">Bar Chart</string>
+    <string name="dummy_99_plus">99+</string>
+    <string name="_99_ndays">99+ \ndays</string>
 </resources>

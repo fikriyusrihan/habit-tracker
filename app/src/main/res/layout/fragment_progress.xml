@@ -25,7 +25,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:elevation="4dp"
-                android:padding="16dp"
+                android:padding="18dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -92,19 +92,11 @@
                     style="@style/Text.Streak.Counter.Number"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/dummy_7"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/_99_ndays"
                     app:layout_constraintBottom_toTopOf="@+id/textView5"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <TextView
-                    android:id="@+id/textView3"
-                    style="@style/Text.Streak.Counter.Suffix"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:text="@string/dummy_days"
-                    app:layout_constraintBottom_toTopOf="@+id/textView5"
-                    app:layout_constraintStart_toEndOf="@+id/tv_counter_streak" />
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/textView5"
@@ -248,6 +240,7 @@
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            android:baselineAligned="false"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
             <LinearLayout

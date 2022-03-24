@@ -49,7 +49,7 @@
     </style>
 
     <style name="Text.Streak.Counter.Number">
-        <item name="android:textSize">48sp</item>
+        <item name="android:textSize">58sp</item>
     </style>
 
     <style name="Text.Streak.Counter.Suffix">
