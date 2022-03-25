@@ -10,10 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HabitTracker">
         <activity
+            android:name=".ui.NewHabitActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.SplashActivity"
-            android:theme="@style/SplashTheme"
+            android:exported="true"
             android:screenOrientation="nosensor"
-            android:exported="true">
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,8 +25,8 @@
         </activity>
         <activity
             android:name=".ui.MainActivity"
-            android:screenOrientation="nosensor"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="nosensor" />
     </application>
 
 </manifest>

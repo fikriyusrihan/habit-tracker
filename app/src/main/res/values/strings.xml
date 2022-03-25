@@ -42,4 +42,15 @@
     <string name="bar_chart">Bar Chart</string>
     <string name="dummy_99_plus">99+</string>
     <string name="_99_ndays">99+ \ndays</string>
+    <string name="add_habit">Add Habit</string>
+    <string name="close">Close</string>
+    <string name="save">Save</string>
+    <string name="habit_title">Habit title</string>
+    <string name="repeat_status">Repeat status</string>
+    <string name="repeat_everyday">Repeat everyday</string>
+    <string name="_2_times_per_day">2 times per day</string>
+    <string name="daily_target">Daily target</string>
+    <string name="daily_reminder">Daily reminder</string>
+    <string name="remind_me_at">Remind me at</string>
+    <string name="start_from">Start from</string>
 </resources>
