@@ -5,13 +5,12 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
-import java.sql.Timestamp
 
 @Entity
 @Parcelize
 data class Habit(
-    @PrimaryKey
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int?,
 
     @ColumnInfo(name = "name")
     val name: String,
@@ -23,8 +22,8 @@ data class Habit(
     val description: String,
 
     @ColumnInfo(name = "start_at")
-    val startAt: Int,
+    val startAt: Long,
 
     @ColumnInfo(name = "created_at")
-    val createdAt: Int
+    val createdAt: Long
 ) : Parcelable

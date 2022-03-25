@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.artworkspace.habittracker.databinding.FragmentJournalBinding
-import com.artworkspace.habittracker.ui.NewHabitActivity
+import com.artworkspace.habittracker.ui.create.NewHabitActivity
 
 class JournalFragment : Fragment() {
 

@@ -7,5 +7,5 @@ import com.artworkspace.habittracker.data.entity.Habit
 @Dao
 interface HabitDao {
     @Insert
-    fun insertHabit(vararg habit: Habit)
+    suspend fun insertHabit(vararg habit: Habit)
 }

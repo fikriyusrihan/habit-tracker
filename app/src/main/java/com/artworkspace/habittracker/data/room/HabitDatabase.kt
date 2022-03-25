@@ -7,8 +7,10 @@ import com.artworkspace.habittracker.data.entity.Unit
 
 @Database(
     entities = [Habit::class, Record::class, Unit::class, DailyTarget::class, WeeklyTarget::class],
-    version = 1
+    version = 1,
+    exportSchema = false
 )
+
 abstract class HabitDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
 }

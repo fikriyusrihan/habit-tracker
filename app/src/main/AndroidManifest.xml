@@ -3,6 +3,7 @@
     package="com.artworkspace.habittracker">
 
     <application
+        android:name=".BaseApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -10,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HabitTracker">
         <activity
-            android:name=".ui.NewHabitActivity"
+            android:name=".ui.create.NewHabitActivity"
             android:exported="false" />
         <activity
             android:name=".ui.SplashActivity"
