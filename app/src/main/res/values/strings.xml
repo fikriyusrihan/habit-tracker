@@ -55,4 +55,8 @@
     <string name="start_from">Start from %s</string>
     <string name="new_habit_created">New habit created</string>
     <string name="select_date">Select Date</string>
+    <string name="application_not_found">Application not found</string>
+    <string name="mail_subject">Habit Tracker Android</string>
+    <string name="feedback_mail_body">Hi, I have some feedback\n</string>
+    <string name="share_app_message">Hi, try this app to build good habits!</string>
 </resources>
