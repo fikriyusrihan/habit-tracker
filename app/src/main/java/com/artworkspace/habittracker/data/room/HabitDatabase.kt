@@ -2,11 +2,12 @@ package com.artworkspace.habittracker.data.room
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.artworkspace.habittracker.data.entity.*
-import com.artworkspace.habittracker.data.entity.Unit
+import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.data.entity.Record
+import com.artworkspace.habittracker.data.entity.WeeklyTarget
 
 @Database(
-    entities = [Habit::class, Record::class, Unit::class, DailyTarget::class, WeeklyTarget::class],
+    entities = [Habit::class, Record::class, WeeklyTarget::class],
     version = 1,
     exportSchema = false
 )

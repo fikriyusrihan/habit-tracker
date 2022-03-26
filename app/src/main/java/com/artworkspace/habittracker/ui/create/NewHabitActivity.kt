@@ -58,7 +58,6 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
             btnSave.setOnClickListener(this@NewHabitActivity)
             btnSelectIcon.setOnClickListener(this@NewHabitActivity)
             repeatStatus.setOnClickListener(this@NewHabitActivity)
-            targetStatus.setOnClickListener(this@NewHabitActivity)
             reminder.setOnClickListener(this@NewHabitActivity)
             startFromStatus.setOnClickListener(this@NewHabitActivity)
         }
@@ -82,10 +81,6 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
                 showRepeatDialog(this)
             }
 
-            binding.targetStatus.id -> {
-                showDailyTarget(this)
-            }
-
             binding.reminder.id -> {
                 showTimePicker()
             }
@@ -104,16 +99,6 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
 
         binding.btnSelectIcon.setImageDrawable(icon.drawable)
         iconId = icon.id
-    }
-
-    private fun showDailyTarget(ctx: Context) {
-        MaterialAlertDialogBuilder(ctx)
-            .setTitle(getString(R.string.daily_target))
-            .setPositiveButton(getString(R.string.save)) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .show()
     }
 
     private fun selectHabitIcon() {

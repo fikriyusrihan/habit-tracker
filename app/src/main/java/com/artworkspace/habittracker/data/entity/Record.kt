@@ -5,7 +5,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
-import java.sql.Timestamp
 
 @Entity
 @Parcelize
@@ -18,9 +17,6 @@ data class Record(
 
     @ColumnInfo(name = "is_checked")
     val isChecked: Boolean,
-
-    @ColumnInfo(name = "value")
-    val value: Int,
 
     @ColumnInfo(name = "timestamp")
     val timestamp: Int
