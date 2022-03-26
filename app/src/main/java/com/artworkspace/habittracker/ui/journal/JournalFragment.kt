@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.artworkspace.habittracker.databinding.FragmentJournalBinding
-import com.artworkspace.habittracker.ui.create.NewHabitActivity
+import com.artworkspace.habittracker.ui.create.CreateHabitActivity
 
 class JournalFragment : Fragment() {
 
@@ -33,7 +33,7 @@ class JournalFragment : Fragment() {
 
         binding.apply {
             fabNewHabit.setOnClickListener {
-                Intent(requireContext(), NewHabitActivity::class.java).also {
+                Intent(requireContext(), CreateHabitActivity::class.java).also {
                     startActivity(it)
                 }
             }

@@ -8,13 +8,14 @@ import com.artworkspace.habittracker.data.HabitRepository
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
+import com.maltaisn.icondialog.data.Icon
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class NewHabitViewModel @Inject constructor(
+class CreateHabitViewModel @Inject constructor(
     private val habitRepository: HabitRepository
 ) : ViewModel() {
 
@@ -23,6 +24,12 @@ class NewHabitViewModel @Inject constructor(
 
     private var _reminder = MutableLiveData<ReminderTime>()
     val reminder: LiveData<ReminderTime> = _reminder
+
+    private var _checkedDays = MutableLiveData<BooleanArray>()
+    val checkedDays: LiveData<BooleanArray> = _checkedDays
+
+    private var _icon = MutableLiveData<Icon?>()
+    val icon: LiveData<Icon?> = _icon
 
     init {
         val calendar = Calendar.getInstance()
@@ -34,22 +41,23 @@ class NewHabitViewModel @Inject constructor(
             hour = defaultReminderHour,
             minute = defaultReminderMinute
         )
+        _checkedDays.value = booleanArrayOf(true, true, true, true, true, true, true)
     }
 
-    fun saveNewHabit(habit: Habit, weeklyTargetArray: BooleanArray, dailyTarget: Int) {
+    fun saveNewHabit(habit: Habit, weeklyTargetArray: BooleanArray?) {
         viewModelScope.launch {
             val habitId = habitRepository.insertHabit(habit)
 
             val weeklyTarget = WeeklyTarget(
                 id = null,
                 habitId = habitId,
-                mon = weeklyTargetArray[0],
-                tue = weeklyTargetArray[1],
-                wed = weeklyTargetArray[2],
-                thu = weeklyTargetArray[3],
-                fri = weeklyTargetArray[4],
-                sat = weeklyTargetArray[5],
-                sun = weeklyTargetArray[6]
+                mon = weeklyTargetArray?.get(0) ?: true,
+                tue = weeklyTargetArray?.get(1) ?: true,
+                wed = weeklyTargetArray?.get(2) ?: true,
+                thu = weeklyTargetArray?.get(3) ?: true,
+                fri = weeklyTargetArray?.get(4) ?: true,
+                sat = weeklyTargetArray?.get(5) ?: true,
+                sun = weeklyTargetArray?.get(6) ?: true
             )
             habitRepository.insertWeeklyTarget(weeklyTarget)
         }
@@ -61,5 +69,14 @@ class NewHabitViewModel @Inject constructor(
 
     fun setReminderTime(time: ReminderTime) {
         _reminder.value = time
+    }
+
+    fun setCheckedDays(checkedDays: BooleanArray?) {
+        val default = booleanArrayOf(true, true, true, true, true, true, true)
+        _checkedDays.value = checkedDays ?: default
+    }
+
+    fun setIcon(icon: Icon?) {
+        _icon.value = icon
     }
 }

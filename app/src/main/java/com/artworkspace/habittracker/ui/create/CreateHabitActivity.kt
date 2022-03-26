@@ -3,7 +3,6 @@ package com.artworkspace.habittracker.ui.create
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -25,70 +24,64 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @AndroidEntryPoint
-class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.Callback {
+class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
 
     private lateinit var binding: ActivityNewHabitBinding
 
-    private var startAtTimestamp: Long? = null
-    private var reminder: ReminderTime? = null
-    private var iconId: Int? = null
+    private var startAtState: Long? = null
+    private var reminderState: ReminderTime? = null
+    private var checkedDaysState: BooleanArray? = null
+    private var iconState: Icon? = null
 
-    private val viewModel: NewHabitViewModel by viewModels()
+    private val viewModel: CreateHabitViewModel by viewModels()
     private val days =
         arrayOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    private val checkedDays = booleanArrayOf(true, true, true, true, true, true, true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNewHabitBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel.startAtTimestamp.observe(this) { timeInMillis ->
-            startAtTimestamp = timeInMillis
-            setDefaultStartAt(timeInMillis)
+        if (savedInstanceState != null) {
+            binding.tvRepeatStatus.text = savedInstanceState.getString(REPEAT_STATUS)
         }
 
-        viewModel.reminder.observe(this) { time ->
-            reminder = time
-            setDefaultReminder(time)
+        viewModel.apply {
+            val observer = this@CreateHabitActivity
+
+            startAtTimestamp.observe(observer) { timeInMillis ->
+                startAtState = timeInMillis
+                setDefaultStartAt(timeInMillis)
+            }
+
+            reminder.observe(observer) { time ->
+                reminderState = time
+                setDefaultReminder(time)
+            }
+
+            checkedDays.observe(observer) { checkedDays ->
+                checkedDaysState = checkedDays
+            }
+
+            icon.observe(observer) { icon ->
+                iconState = icon
+                binding.btnSelectIcon.setImageDrawable(icon?.drawable)
+            }
         }
 
         binding.apply {
-            btnExit.setOnClickListener(this@NewHabitActivity)
-            btnSave.setOnClickListener(this@NewHabitActivity)
-            btnSelectIcon.setOnClickListener(this@NewHabitActivity)
-            repeatStatus.setOnClickListener(this@NewHabitActivity)
-            reminder.setOnClickListener(this@NewHabitActivity)
-            startFromStatus.setOnClickListener(this@NewHabitActivity)
+            btnExit.setOnClickListener { finish() }
+            btnSave.setOnClickListener { saveNewHabit() }
+            btnSelectIcon.setOnClickListener { selectHabitIcon() }
+            repeatStatus.setOnClickListener { showRepeatDialog(this@CreateHabitActivity) }
+            reminder.setOnClickListener { showTimePicker() }
+            startFromStatus.setOnClickListener { setStartDate() }
         }
     }
 
-    override fun onClick(view: View) {
-        when (view.id) {
-            binding.btnExit.id -> {
-                finish()
-            }
-
-            binding.btnSave.id -> {
-                saveNewHabit()
-            }
-
-            binding.btnSelectIcon.id -> {
-                selectHabitIcon()
-            }
-
-            binding.repeatStatus.id -> {
-                showRepeatDialog(this)
-            }
-
-            binding.reminder.id -> {
-                showTimePicker()
-            }
-
-            binding.startFromStatus.id -> {
-                setStartDate()
-            }
-        }
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(REPEAT_STATUS, binding.tvRepeatStatus.text.toString())
+        super.onSaveInstanceState(outState)
     }
 
     override val iconDialogIconPack: IconPack?
@@ -96,11 +89,13 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
 
     override fun onIconDialogIconsSelected(dialog: IconDialog, icons: List<Icon>) {
         val icon = icons.first()
-
         binding.btnSelectIcon.setImageDrawable(icon.drawable)
-        iconId = icon.id
+        viewModel.setIcon(icon)
     }
 
+    /**
+     * Show dialog icon picker for the habit
+     */
     private fun selectHabitIcon() {
         val iconDialog = supportFragmentManager.findFragmentByTag(ICON_DIALOG_TAG) as IconDialog?
             ?: IconDialog.newInstance(IconDialogSettings())
@@ -108,6 +103,9 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
         iconDialog.show(supportFragmentManager, ICON_DIALOG_TAG)
     }
 
+    /**
+     * Set the start from text view
+     */
     private fun setDefaultStartAt(timeInMillis: Long) {
         val todayStart = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -127,6 +125,9 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
         }
     }
 
+    /**
+     * Set default reminder for every new habit
+     */
     @SuppressLint("SimpleDateFormat")
     private fun setDefaultReminder(time: ReminderTime) {
         val sdf = SimpleDateFormat("h:mm a")
@@ -139,11 +140,14 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
             getString(R.string.remind_me_at, sdf.format(calendar.time))
     }
 
+    /**
+     * Show time picker for daily reminder
+     */
     private fun showTimePicker() {
         MaterialTimePicker.Builder()
             .setTimeFormat(TimeFormat.CLOCK_12H)
-            .setHour(reminder?.hour ?: 9)
-            .setMinute(reminder?.minute ?: 0)
+            .setHour(reminderState?.hour ?: 9)
+            .setMinute(reminderState?.minute ?: 0)
             .setTitleText(getString(R.string.daily_reminder))
             .build()
             .apply {
@@ -155,27 +159,33 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
             }
     }
 
+    /**
+     * Show and set the date picker for start date field
+     */
     private fun setStartDate() {
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(getString(R.string.select_date))
-            .setSelection(startAtTimestamp)
+            .setSelection(startAtState)
             .build()
 
-        datePicker.show(supportFragmentManager, TAG)
+        datePicker.show(supportFragmentManager, DATE_PICKER_TAG)
         datePicker.addOnPositiveButtonClickListener {
             viewModel.setStartAtTimestamp(it)
         }
     }
 
+    /**
+     * Show daily repeat dialog
+     */
     private fun showRepeatDialog(ctx: Context) {
         MaterialAlertDialogBuilder(ctx)
             .setTitle(getString(R.string.repeat_this_habit_every))
             .setPositiveButton(getString(R.string.save)) { _, _ ->
                 var string = ""
                 var isEveryday = true
-                checkedDays.forEachIndexed { index, b ->
+                checkedDaysState?.forEachIndexed { index, b ->
                     if (b) {
-                        string += if (index != 0) {
+                        string += if (string.isNotBlank()) {
                             ", ${days[index]}"
                         } else {
                             days[index]
@@ -187,35 +197,38 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
 
                 if (isEveryday) binding.tvRepeatStatus.text = getString(R.string.repeat_everyday)
                 else binding.tvRepeatStatus.text = getString(R.string.repeat_every, string)
+
+                viewModel.setCheckedDays(checkedDaysState)
             }
-            .setMultiChoiceItems(days, checkedDays) { _, which, checked ->
-                checkedDays[which] = checked
+            .setMultiChoiceItems(days, checkedDaysState) { _, which, checked ->
+                checkedDaysState?.set(which, checked)
             }
             .setCancelable(false)
             .show()
     }
 
+    /**
+     * Save and store the new habit to the database
+     */
     private fun saveNewHabit() {
         val name = binding.etHabitTitle.text.toString()
-        val icon = iconId
-        val startAt = startAtTimestamp!!
+        val description = binding.etHabitDescription.text.toString()
+        val icon = iconState?.id
+        val startAt = startAtState!!
 
         if (name.isBlank()) {
             binding.etHabitTitle.error = getString(R.string.please_fill_this_field)
-            Toast.makeText(this, getString(R.string.please_fill_this_field), Toast.LENGTH_SHORT)
-                .show()
         } else {
             viewModel.saveNewHabit(
                 habit = Habit(
                     id = null,
                     name = name,
                     icon = icon,
-                    description = "",
+                    description = description,
                     startAt = startAt,
                     createdAt = Calendar.getInstance().timeInMillis
                 ),
-                weeklyTargetArray = checkedDays,
-                dailyTarget = 1
+                weeklyTargetArray = checkedDaysState
             )
 
             Toast.makeText(this, getString(R.string.new_habit_created), Toast.LENGTH_SHORT).show()
@@ -224,9 +237,10 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
     }
 
     companion object {
-        private const val TAG = "NewHabitActivity"
+        private const val REPEAT_STATUS = "RepeatStatus"
         private const val ICON_DIALOG_TAG = "IconDialog"
         private const val TIME_PICKER_TAG = "TimePicker"
+        private const val DATE_PICKER_TAG = "DatePicker"
     }
 
 

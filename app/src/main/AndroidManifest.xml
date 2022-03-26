@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HabitTracker">
         <activity
-            android:name=".ui.create.NewHabitActivity"
+            android:name=".ui.create.CreateHabitActivity"
             android:exported="false" />
         <activity
             android:name=".ui.SplashActivity"
