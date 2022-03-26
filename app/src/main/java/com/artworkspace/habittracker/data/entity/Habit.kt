@@ -10,7 +10,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Habit(
     @PrimaryKey(autoGenerate = true)
-    val id: Int?,
+    val id: Long?,
 
     @ColumnInfo(name = "name")
     val name: String,
@@ -25,5 +25,5 @@ data class Habit(
     val startAt: Long,
 
     @ColumnInfo(name = "created_at")
-    val createdAt: Long
+    val createdAt: Long?
 ) : Parcelable

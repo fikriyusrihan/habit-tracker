@@ -59,4 +59,7 @@
     <string name="mail_subject">Habit Tracker Android</string>
     <string name="feedback_mail_body">Hi, I have some feedback\n</string>
     <string name="share_app_message">Hi, try this app to build good habits!</string>
+    <string name="please_fill_this_field">Please fill this field</string>
+    <string name="repeat">Repeat</string>
+    <string name="repeat_every">Repeat every %s</string>
 </resources>

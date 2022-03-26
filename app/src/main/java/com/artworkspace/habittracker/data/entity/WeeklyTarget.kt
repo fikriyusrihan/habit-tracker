@@ -9,11 +9,11 @@ import kotlinx.parcelize.Parcelize
 @Entity
 @Parcelize
 data class WeeklyTarget(
-    @PrimaryKey
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long?,
 
     @ColumnInfo(name = "habit_id")
-    val habitId: Int,
+    val habitId: Long,
 
     val mon: Boolean,
     val tue: Boolean,
