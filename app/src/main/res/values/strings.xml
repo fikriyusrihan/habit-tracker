@@ -51,7 +51,7 @@
     <string name="_2_times_per_day">2 times per day</string>
     <string name="daily_target">Daily target</string>
     <string name="daily_reminder">Daily reminder</string>
-    <string name="remind_me_at">Remind me at</string>
+    <string name="remind_me_at">Remind me at %s</string>
     <string name="start_from">Start from %s</string>
     <string name="new_habit_created">New habit created</string>
     <string name="select_date">Select Date</string>
@@ -63,4 +63,5 @@
     <string name="repeat">Repeat</string>
     <string name="repeat_every">Repeat every %s</string>
     <string name="start_from_today">Start from today</string>
+    <string name="repeat_this_habit_every">Repeat this habit every</string>
 </resources>

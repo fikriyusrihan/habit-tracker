@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.artworkspace.habittracker.data.HabitRepository
 import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -17,8 +18,23 @@ class NewHabitViewModel @Inject constructor(
     private val habitRepository: HabitRepository
 ) : ViewModel() {
 
-    private var _startAtTimestamp = MutableLiveData(Calendar.getInstance().timeInMillis)
+    private var _startAtTimestamp = MutableLiveData<Long>()
     val startAtTimestamp: LiveData<Long> = _startAtTimestamp
+
+    private var _reminder = MutableLiveData<ReminderTime>()
+    val reminder: LiveData<ReminderTime> = _reminder
+
+    init {
+        val calendar = Calendar.getInstance()
+        val defaultReminderHour = 9
+        val defaultReminderMinute = 0
+
+        _startAtTimestamp.value = calendar.timeInMillis
+        _reminder.value = ReminderTime(
+            hour = defaultReminderHour,
+            minute = defaultReminderMinute
+        )
+    }
 
     fun saveNewHabit(habit: Habit, weeklyTargetArray: BooleanArray, dailyTarget: Int) {
         viewModelScope.launch {
@@ -41,5 +57,9 @@ class NewHabitViewModel @Inject constructor(
 
     fun setStartAtTimestamp(timeInMillis: Long) {
         _startAtTimestamp.value = timeInMillis
+    }
+
+    fun setReminderTime(time: ReminderTime) {
+        _reminder.value = time
     }
 }

@@ -1,5 +1,6 @@
 package com.artworkspace.habittracker.ui.create
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.View
@@ -9,9 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.artworkspace.habittracker.BaseApplication
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.databinding.ActivityNewHabitBinding
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.maltaisn.icondialog.IconDialog
 import com.maltaisn.icondialog.IconDialogSettings
 import com.maltaisn.icondialog.data.Icon
@@ -26,6 +30,7 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
     private lateinit var binding: ActivityNewHabitBinding
 
     private var startAtTimestamp: Long? = null
+    private var reminder: ReminderTime? = null
     private var iconId: Int? = null
 
     private val viewModel: NewHabitViewModel by viewModels()
@@ -43,12 +48,18 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
             setDefaultStartAt(timeInMillis)
         }
 
+        viewModel.reminder.observe(this) { time ->
+            reminder = time
+            setDefaultReminder(time)
+        }
+
         binding.apply {
             btnExit.setOnClickListener(this@NewHabitActivity)
             btnSave.setOnClickListener(this@NewHabitActivity)
             btnSelectIcon.setOnClickListener(this@NewHabitActivity)
             repeatStatus.setOnClickListener(this@NewHabitActivity)
             targetStatus.setOnClickListener(this@NewHabitActivity)
+            reminder.setOnClickListener(this@NewHabitActivity)
             startFromStatus.setOnClickListener(this@NewHabitActivity)
         }
     }
@@ -73,6 +84,10 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
 
             binding.targetStatus.id -> {
                 showDailyTarget(this)
+            }
+
+            binding.reminder.id -> {
+                showTimePicker()
             }
 
             binding.startFromStatus.id -> {
@@ -127,6 +142,34 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
+    private fun setDefaultReminder(time: ReminderTime) {
+        val sdf = SimpleDateFormat("h:mm a")
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, time.hour)
+            set(Calendar.MINUTE, time.minute)
+        }
+
+        binding.tvReminderStatus.text =
+            getString(R.string.remind_me_at, sdf.format(calendar.time))
+    }
+
+    private fun showTimePicker() {
+        MaterialTimePicker.Builder()
+            .setTimeFormat(TimeFormat.CLOCK_12H)
+            .setHour(reminder?.hour ?: 9)
+            .setMinute(reminder?.minute ?: 0)
+            .setTitleText(getString(R.string.daily_reminder))
+            .build()
+            .apply {
+                addOnPositiveButtonClickListener {
+                    val reminderTime = ReminderTime(this.hour, this.minute)
+                    viewModel.setReminderTime(reminderTime)
+                }
+                show(supportFragmentManager, TIME_PICKER_TAG)
+            }
+    }
+
     private fun setStartDate() {
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(getString(R.string.select_date))
@@ -141,7 +184,7 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
 
     private fun showRepeatDialog(ctx: Context) {
         MaterialAlertDialogBuilder(ctx)
-            .setTitle(getString(R.string.repeat))
+            .setTitle(getString(R.string.repeat_this_habit_every))
             .setPositiveButton(getString(R.string.save)) { _, _ ->
                 var string = ""
                 var isEveryday = true
@@ -198,6 +241,7 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
     companion object {
         private const val TAG = "NewHabitActivity"
         private const val ICON_DIALOG_TAG = "IconDialog"
+        private const val TIME_PICKER_TAG = "TimePicker"
     }
 
 
