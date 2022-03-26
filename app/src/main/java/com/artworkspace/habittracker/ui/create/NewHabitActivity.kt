@@ -48,6 +48,7 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
             btnSave.setOnClickListener(this@NewHabitActivity)
             btnSelectIcon.setOnClickListener(this@NewHabitActivity)
             repeatStatus.setOnClickListener(this@NewHabitActivity)
+            targetStatus.setOnClickListener(this@NewHabitActivity)
             startFromStatus.setOnClickListener(this@NewHabitActivity)
         }
     }
@@ -70,6 +71,10 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
                 showRepeatDialog(this)
             }
 
+            binding.targetStatus.id -> {
+                showDailyTarget(this)
+            }
+
             binding.startFromStatus.id -> {
                 setStartDate()
             }
@@ -86,6 +91,16 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
         iconId = icon.id
     }
 
+    private fun showDailyTarget(ctx: Context) {
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(getString(R.string.daily_target))
+            .setPositiveButton(getString(R.string.save)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
     private fun selectHabitIcon() {
         val iconDialog = supportFragmentManager.findFragmentByTag(ICON_DIALOG_TAG) as IconDialog?
             ?: IconDialog.newInstance(IconDialogSettings())
@@ -94,10 +109,22 @@ class NewHabitActivity : AppCompatActivity(), View.OnClickListener, IconDialog.C
     }
 
     private fun setDefaultStartAt(timeInMillis: Long) {
+        val todayStart = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+        }
+        val todayEnd = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+        }
+
         val date = Date(timeInMillis)
         val sdf = SimpleDateFormat.getDateInstance()
 
-        binding.tvStartFromStatus.text = getString(R.string.start_from, sdf.format(date))
+        if (timeInMillis in todayStart.timeInMillis..todayEnd.timeInMillis) {
+            binding.tvStartFromStatus.text = getString(R.string.start_from_today)
+        } else {
+            binding.tvStartFromStatus.text = getString(R.string.start_from, sdf.format(date))
+        }
     }
 
     private fun setStartDate() {

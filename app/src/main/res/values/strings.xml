@@ -62,4 +62,5 @@
     <string name="please_fill_this_field">Please fill this field</string>
     <string name="repeat">Repeat</string>
     <string name="repeat_every">Repeat every %s</string>
+    <string name="start_from_today">Start from today</string>
 </resources>
