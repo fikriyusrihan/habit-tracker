@@ -6,12 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.artworkspace.habittracker.data.HabitRepository
 import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
+import com.artworkspace.habittracker.utils.todayTimestamp
 import com.maltaisn.icondialog.data.Icon
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,11 +33,10 @@ class CreateHabitViewModel @Inject constructor(
     val icon: LiveData<Icon?> = _icon
 
     init {
-        val calendar = Calendar.getInstance()
         val defaultReminderHour = 9
         val defaultReminderMinute = 0
 
-        _startAtTimestamp.value = calendar.timeInMillis
+        _startAtTimestamp.value = todayTimestamp
         _reminder.value = ReminderTime(
             hour = defaultReminderHour,
             minute = defaultReminderMinute
@@ -59,7 +59,16 @@ class CreateHabitViewModel @Inject constructor(
                 sat = weeklyTargetArray?.get(5) ?: true,
                 sun = weeklyTargetArray?.get(6) ?: true
             )
+
+            val record = Record(
+                id = null,
+                habitId = habitId,
+                isChecked = false,
+                timestamp = habit.startAt
+            )
+
             habitRepository.insertWeeklyTarget(weeklyTarget)
+            habitRepository.insertDailyRecord(record)
         }
     }
 

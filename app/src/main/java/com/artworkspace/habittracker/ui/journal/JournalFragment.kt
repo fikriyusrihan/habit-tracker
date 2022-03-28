@@ -5,18 +5,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.artworkspace.habittracker.BaseApplication
+import com.artworkspace.habittracker.adapter.ListHabitAdapter
+import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.databinding.FragmentJournalBinding
 import com.artworkspace.habittracker.ui.create.CreateHabitActivity
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class JournalFragment : Fragment() {
 
     private var _binding: FragmentJournalBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
+
     private val journalViewModel: JournalViewModel by viewModels()
 
     override fun onCreateView(
@@ -40,8 +45,33 @@ class JournalFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        journalViewModel.getUncompletedHabit().observe(viewLifecycleOwner) { habits ->
+            showUncompletedHabit(habits)
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showUncompletedHabit(habits: List<Habit>) {
+        val linearLayoutManager = LinearLayoutManager(requireContext())
+        val listAdapter = ListHabitAdapter(habits, requireActivity().application as BaseApplication)
+
+        binding.rvHabitNotCompleted.apply {
+            layoutManager = linearLayoutManager
+            adapter = listAdapter
+            setHasFixedSize(true)
+        }
+
+        listAdapter.setOnItemClickCallback(object : ListHabitAdapter.OnItemClickCallback {
+            override fun onItemClicked(habit: Habit) {
+                Toast.makeText(requireContext(), "Hi", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }

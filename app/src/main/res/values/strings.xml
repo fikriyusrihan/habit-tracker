@@ -65,4 +65,7 @@
     <string name="start_from_today">Start from today</string>
     <string name="repeat_this_habit_every">Repeat this habit every</string>
     <string name="your_habit_description">Your habit description</string>
+    <string name="habit">Habit</string>
+    <string name="running">Running</string>
+    <string name="not_completed">Not completed</string>
 </resources>
