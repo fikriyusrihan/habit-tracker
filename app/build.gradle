@@ -59,7 +59,7 @@ dependencies {
     // Room
     implementation 'androidx.room:room-runtime:2.4.2'
     annotationProcessor 'androidx.room:room-compiler:2.4.2'
-    implementation("androidx.room:room-ktx:2.4.2")
+    implementation "androidx.room:room-ktx:2.4.2"
     kapt 'androidx.room:room-compiler:2.4.2'
 
     // Hilt
@@ -69,6 +69,9 @@ dependencies {
     // Icon Dialog
     implementation 'com.maltaisn:icondialog:3.3.0'
     implementation 'com.maltaisn:iconpack-font-awesome:5.13.0'
+
+    // RecyclerView Swipe Decorator
+    implementation 'com.github.xabaras:RecyclerViewSwipeDecorator:1.4'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

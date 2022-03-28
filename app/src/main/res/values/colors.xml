@@ -6,6 +6,7 @@
     <color name="blue_700">#4403C8</color>
 
     <color name="purple_500">#8E2DE2</color>
+    <color name="purple_500_half">#808E2DE2</color>
     <color name="purple_700">#630EAC</color>
 
     <color name="black">#FF000000</color>
