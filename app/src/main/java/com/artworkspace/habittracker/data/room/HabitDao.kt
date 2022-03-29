@@ -1,24 +1,22 @@
 package com.artworkspace.habittracker.data.room
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HabitDao {
 
     @Query(
         "SELECT habit.id, name, icon, description, start_at, created_at " +
-                "FROM habit " +
-                "INNER JOIN record ON habit.id = record.habit_id " +
+                "FROM record " +
+                "INNER JOIN habit ON habit.id = record.habit_id " +
                 "WHERE record.is_checked = 0 AND Record.timestamp = :timestamp"
     )
-    fun getUncompletedHabitRecord(timestamp: Long): LiveData<List<Habit>>
+    fun getUncompletedHabitRecord(timestamp: Long): Flow<List<Habit>>
 
     @Query("SELECT COUNT(id) FROM record WHERE timestamp = :timestamp")
     suspend fun getCountRecordByTimestamp(timestamp: Long): Int
@@ -26,8 +24,11 @@ interface HabitDao {
     @Query("SELECT * FROM habit WHERE start_at >= :timestamp")
     suspend fun getAllStartedHabit(timestamp: Long): List<Habit>
 
-    @Query("SELECT * FROM record WHERE habit_id = :id")
-    suspend fun getRecordByHabitId(id: Long): Record?
+    @Query("SELECT * FROM record WHERE habit_id = :id AND timestamp = :timestamp")
+    suspend fun getHabitRecord(id: Long, timestamp: Long): Record
+
+    @Update
+    suspend fun updateRecord(record: Record)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertHabit(habit: Habit): Long
@@ -36,5 +37,5 @@ interface HabitDao {
     suspend fun insertWeeklyTarget(weeklyTarget: WeeklyTarget)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertRecord(vararg record: Record)
+    suspend fun insertRecord(record: Record)
 }

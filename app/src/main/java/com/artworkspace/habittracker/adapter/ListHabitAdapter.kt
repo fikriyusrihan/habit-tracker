@@ -1,102 +1,74 @@
 package com.artworkspace.habittracker.adapter
 
-import android.content.Context
-import android.graphics.Canvas
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.artworkspace.habittracker.BaseApplication
-import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.databinding.HabitItemBinding
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 
 class ListHabitAdapter(
-    private val listHabit: List<Habit>,
-    application: BaseApplication
+    private val application: BaseApplication
 ) :
-    RecyclerView.Adapter<ListHabitAdapter.ListViewHolder>() {
+    ListAdapter<Habit, ListHabitAdapter.ListViewHolder>(DiffCallback) {
 
     private lateinit var onItemClickCallback: OnItemClickCallback
-    private val iconPack = application.iconPack
 
     fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
         this.onItemClickCallback = onItemClickCallback
     }
 
-    fun getHabitItem(index: Int): Habit = listHabit[index]
-
-    class ListViewHolder(var binding: HabitItemBinding) : RecyclerView.ViewHolder(binding.root)
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
-        val binding = HabitItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ListViewHolder(binding)
+        val viewHolder = ListViewHolder(
+            HabitItemBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            ),
+            application
+        )
+
+        viewHolder.itemView.setOnClickListener {
+            val position = viewHolder.bindingAdapterPosition
+            onItemClickCallback.onItemClicked(getItem(position))
+        }
+
+        return viewHolder
     }
 
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
-        val habit = listHabit[position]
-
-        if (habit.icon != null) {
-            val icon = iconPack?.getIcon(habit.icon)
-            holder.binding.ivHabitIcon.setImageDrawable(icon?.drawable)
-        }
-
-        holder.binding.tvHabitTitle.text = habit.name
-        holder.itemView.setOnClickListener { onItemClickCallback.onItemClicked(habit) }
+        holder.bind(getItem(position))
     }
 
-    override fun getItemCount(): Int = listHabit.size
+    class ListViewHolder(var binding: HabitItemBinding, application: BaseApplication) :
+        RecyclerView.ViewHolder(binding.root) {
+        private val iconPack = application.iconPack
 
-    interface OnItemClickCallback {
-        fun onItemClicked(habit: Habit)
+        fun bind(habit: Habit) {
+            if (habit.icon != null) {
+                val icon = iconPack?.getIcon(habit.icon)
+                binding.ivHabitIcon.setImageDrawable(icon?.drawable)
+            }
+            binding.tvHabitTitle.text = habit.name
+        }
     }
 
-    abstract class SwipeGesture(context: Context) :
-        ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+    companion object {
+        private val DiffCallback = object : DiffUtil.ItemCallback<Habit>() {
+            override fun areItemsTheSame(oldItem: Habit, newItem: Habit): Boolean {
+                return oldItem.id == newItem.id
+            }
 
-        private val doneColor = ContextCompat.getColor(context, R.color.blue_500)
-        private val skipColor = ContextCompat.getColor(context, R.color.purple_500_half)
-        private val doneIcon = R.drawable.ic_baseline_check_white_24
-        private val skipIcon = R.drawable.ic_baseline_arrow_forward_24
+            override fun areContentsTheSame(oldItem: Habit, newItem: Habit): Boolean {
+                return oldItem == newItem
+            }
 
-        override fun onMove(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            target: RecyclerView.ViewHolder
-        ): Boolean {
-            return false
         }
 
-        override fun onChildDraw(
-            c: Canvas,
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            dX: Float,
-            dY: Float,
-            actionState: Int,
-            isCurrentlyActive: Boolean
-        ) {
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-
-            RecyclerViewSwipeDecorator.Builder(
-                c,
-                recyclerView,
-                viewHolder,
-                dX,
-                dY,
-                actionState,
-                isCurrentlyActive
-            )
-                .addSwipeLeftBackgroundColor(skipColor)
-                .addSwipeLeftActionIcon(skipIcon)
-                .addSwipeRightBackgroundColor(doneColor)
-                .addSwipeRightActionIcon(doneIcon)
-                .create()
-                .decorate()
-        }
-
+        private const val TAG = "ListHabitAdapter"
     }
 }

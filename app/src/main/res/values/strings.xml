@@ -68,4 +68,6 @@
     <string name="habit">Habit</string>
     <string name="running">Running</string>
     <string name="not_completed">Not completed</string>
+    <string name="done">Done</string>
+    <string name="please_create_a_new_habit">Please create a new habit</string>
 </resources>
