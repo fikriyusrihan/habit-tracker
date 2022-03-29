@@ -19,6 +19,10 @@
         <item name="android:windowBackground">@drawable/splash_bg_night</item>
     </style>
 
+    <style name="CustomChipStyle" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
     <style name="AppBarLayout">
         <item name="android:background">@color/black_200</item>
     </style>

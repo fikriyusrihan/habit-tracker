@@ -3,17 +3,14 @@ package com.artworkspace.habittracker.ui.journal
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Intent
-import android.graphics.Canvas
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,11 +18,12 @@ import com.artworkspace.habittracker.BaseApplication
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.adapter.ListHabitAdapter
 import com.artworkspace.habittracker.adapter.OnItemClickCallback
+import com.artworkspace.habittracker.adapter.SwipeGesture
 import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.data.entity.HabitRecord
 import com.artworkspace.habittracker.databinding.FragmentJournalBinding
 import com.artworkspace.habittracker.ui.create.CreateHabitActivity
 import dagger.hilt.android.AndroidEntryPoint
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -49,13 +47,30 @@ class JournalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val listAdapter = ListHabitAdapter(requireActivity().application as BaseApplication)
-        setRecyclerView(listAdapter)
+        val listUncompletedHabit =
+            ListHabitAdapter(requireActivity().application as BaseApplication)
+        setUncompletedHabitRecyclerView(listUncompletedHabit)
 
-        lifecycle.coroutineScope.launch {
-            journalViewModel.getUncompletedHabit().collect { habits ->
-                showMessage(habits.isEmpty())
-                listAdapter.submitList(habits)
+        val listCompletedHabit = ListHabitAdapter(requireActivity().application as BaseApplication)
+        setCompletedHabitRecyclerView(listCompletedHabit)
+
+        lifecycleScope.launchWhenStarted {
+            launch {
+                journalViewModel.getUncompletedHabit().collect { habits ->
+                    listUncompletedHabit.submitList(habits)
+                }
+            }
+
+            launch {
+                journalViewModel.getCompletedHabit().collect { habits ->
+                    listCompletedHabit.submitList(habits)
+
+                    if (habits.isEmpty()) {
+                        binding.tvCountCompleted.visibility = View.GONE
+                    } else {
+                        binding.tvCountCompleted.visibility = View.VISIBLE
+                    }
+                }
             }
         }
 
@@ -68,13 +83,17 @@ class JournalFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        journalViewModel.todayRecordInit()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
     private fun showMessage(isVisible: Boolean) {
-        val recyclerView = binding.rvHabitNotCompleted
         val messageView = binding.tvHabitMessage
 
         if (isVisible) {
@@ -89,15 +108,6 @@ class JournalFragment : Fragment() {
             }
 
         } else {
-            recyclerView.apply {
-                alpha = 0f
-                visibility = View.VISIBLE
-
-                animate()
-                    .alpha(1f)
-                    .setDuration(300L)
-                    .setListener(null)
-            }
             messageView.animate()
                 .alpha(0f)
                 .setDuration(300L)
@@ -109,71 +119,71 @@ class JournalFragment : Fragment() {
         }
     }
 
-    private fun setRecyclerView(listAdapter: ListHabitAdapter) {
+    private fun setCompletedHabitRecyclerView(listAdapter: ListHabitAdapter) {
         val linearLayoutManager = LinearLayoutManager(requireContext())
-        val itemTouchHelper = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
-            private val doneColor = ContextCompat.getColor(requireContext(), R.color.blue_500)
-            private val doneIcon = R.drawable.ic_baseline_check_white_24
+        val backgroundColor = requireContext().getColor(R.color.dark_grey)
+        val labelColor = requireContext().getColor(R.color.white)
+        val actionIcon = R.drawable.ic_baseline_undo_white_24
+        val actionLabel = getString(R.string.undo)
 
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
-                return false
-            }
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.absoluteAdapterPosition
-                Log.d(TAG, "onSwiped: ${listAdapter.currentList}")
-                journalViewModel.setHabitAsDone(listAdapter.currentList[position])
-            }
-
-            override fun onChildDraw(
-                c: Canvas,
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                dX: Float,
-                dY: Float,
-                actionState: Int,
-                isCurrentlyActive: Boolean
-            ) {
-                super.onChildDraw(
-                    c,
-                    recyclerView,
-                    viewHolder,
-                    dX,
-                    dY,
-                    actionState,
-                    isCurrentlyActive
-                )
-
-                RecyclerViewSwipeDecorator.Builder(
-                    c,
-                    recyclerView,
-                    viewHolder,
-                    dX,
-                    dY,
-                    actionState,
-                    isCurrentlyActive
-                )
-                    .addSwipeRightBackgroundColor(doneColor)
-                    .addSwipeRightLabel(requireContext().getString(R.string.done))
-                    .setSwipeRightLabelColor(
-                        ContextCompat.getColor(
-                            requireContext(),
-                            R.color.white
-                        )
+        val swipeGesture =
+            object : SwipeGesture(backgroundColor, actionIcon, actionLabel, labelColor) {
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val position = viewHolder.absoluteAdapterPosition
+                    val habitRecord = listAdapter.currentList[position]
+                    val habit = Habit(
+                        id = habitRecord.id,
+                        name = habitRecord.name,
+                        description = habitRecord.description,
+                        icon = habitRecord.icon,
+                        startAt = habitRecord.startAt,
+                        createdAt = habitRecord.createdAt
                     )
-                    .addSwipeRightActionIcon(doneIcon)
-                    .create()
-                    .decorate()
+                    journalViewModel.setHabitRecordCheck(habit, false)
+                }
             }
 
-        }
         listAdapter.setOnItemClickCallback(object : OnItemClickCallback {
-            override fun onItemClicked(habit: Habit) {
+            override fun onItemClicked(habit: HabitRecord) {
+                Toast.makeText(requireContext(), "Hi", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        binding.rvHabitCompleted.apply {
+            layoutManager = linearLayoutManager
+            adapter = listAdapter
+            ItemTouchHelper(swipeGesture).attachToRecyclerView(this)
+        }
+    }
+
+    private fun setUncompletedHabitRecyclerView(listAdapter: ListHabitAdapter) {
+        val linearLayoutManager = LinearLayoutManager(requireContext())
+
+        val backgroundColor = requireContext().getColor(R.color.blue_500)
+        val labelColor = requireContext().getColor(R.color.white)
+        val actionIcon = R.drawable.ic_baseline_check_white_24
+        val actionLabel = getString(R.string.done)
+
+        val swipeGesture =
+            object : SwipeGesture(backgroundColor, actionIcon, actionLabel, labelColor) {
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val position = viewHolder.absoluteAdapterPosition
+                    val habitRecord = listAdapter.currentList[position]
+                    val habit = Habit(
+                        id = habitRecord.id,
+                        name = habitRecord.name,
+                        description = habitRecord.description,
+                        icon = habitRecord.icon,
+                        startAt = habitRecord.startAt,
+                        createdAt = habitRecord.createdAt
+                    )
+                    journalViewModel.setHabitRecordCheck(habit, true)
+                }
+            }
+
+        listAdapter.setOnItemClickCallback(object : OnItemClickCallback {
+            override fun onItemClicked(habit: HabitRecord) {
                 Toast.makeText(requireContext(), "Hi", Toast.LENGTH_SHORT).show()
             }
         })
@@ -181,11 +191,7 @@ class JournalFragment : Fragment() {
         binding.rvHabitNotCompleted.apply {
             layoutManager = linearLayoutManager
             adapter = listAdapter
-            ItemTouchHelper(itemTouchHelper).attachToRecyclerView(this)
+            ItemTouchHelper(swipeGesture).attachToRecyclerView(this)
         }
-    }
-
-    companion object {
-        private const val TAG = "JournalFragment"
     }
 }

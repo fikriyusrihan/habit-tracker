@@ -1,26 +1,20 @@
 package com.artworkspace.habittracker.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.artworkspace.habittracker.BaseApplication
-import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.R
+import com.artworkspace.habittracker.data.entity.HabitRecord
 import com.artworkspace.habittracker.databinding.HabitItemBinding
 
 
-class ListHabitAdapter(
-    private val application: BaseApplication
-) :
-    ListAdapter<Habit, ListHabitAdapter.ListViewHolder>(DiffCallback) {
+class ListHabitAdapter(private val application: BaseApplication) :
+    ListAdapter<HabitRecord, ListHabitAdapter.ListViewHolder>(DiffCallback) {
 
     private lateinit var onItemClickCallback: OnItemClickCallback
-
-    fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
-        this.onItemClickCallback = onItemClickCallback
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
         val viewHolder = ListViewHolder(
@@ -44,31 +38,43 @@ class ListHabitAdapter(
         holder.bind(getItem(position))
     }
 
-    class ListViewHolder(var binding: HabitItemBinding, application: BaseApplication) :
+    class ListViewHolder(var binding: HabitItemBinding, var application: BaseApplication) :
         RecyclerView.ViewHolder(binding.root) {
         private val iconPack = application.iconPack
 
-        fun bind(habit: Habit) {
+        /**
+         * Bind the habit record to the correspondent views
+         *
+         * @param habit HabitRecord
+         */
+        fun bind(habit: HabitRecord) {
             if (habit.icon != null) {
                 val icon = iconPack?.getIcon(habit.icon)
                 binding.ivHabitIcon.setImageDrawable(icon?.drawable)
             }
-            binding.tvHabitTitle.text = habit.name
+
+            binding.apply {
+                tvHabitTitle.text = habit.name
+                tvHabitStatus.text =
+                    if (habit.isChecked) application.getString(R.string.completed)
+                    else application.getString(R.string.not_completed)
+            }
         }
     }
 
+    fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
+        this.onItemClickCallback = onItemClickCallback
+    }
+
     companion object {
-        private val DiffCallback = object : DiffUtil.ItemCallback<Habit>() {
-            override fun areItemsTheSame(oldItem: Habit, newItem: Habit): Boolean {
+        private val DiffCallback = object : DiffUtil.ItemCallback<HabitRecord>() {
+            override fun areItemsTheSame(oldItem: HabitRecord, newItem: HabitRecord): Boolean {
                 return oldItem.id == newItem.id
             }
 
-            override fun areContentsTheSame(oldItem: Habit, newItem: Habit): Boolean {
+            override fun areContentsTheSame(oldItem: HabitRecord, newItem: HabitRecord): Boolean {
                 return oldItem == newItem
             }
-
         }
-
-        private const val TAG = "ListHabitAdapter"
     }
 }

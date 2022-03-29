@@ -1,18 +1,17 @@
 package com.artworkspace.habittracker.adapter
 
-import android.content.Context
 import android.graphics.Canvas
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.artworkspace.habittracker.R
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
-abstract class SwipeGesture(private val context: Context) :
+abstract class SwipeGesture(
+    private val backgroundColor: Int,
+    private val actionIcon: Int,
+    private val actionLabel: String,
+    private val labelColor: Int
+) :
     ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-
-    private val doneColor = ContextCompat.getColor(context, R.color.blue_500)
-    private val doneIcon = R.drawable.ic_baseline_check_white_24
 
     override fun onMove(
         recyclerView: RecyclerView,
@@ -42,12 +41,11 @@ abstract class SwipeGesture(private val context: Context) :
             actionState,
             isCurrentlyActive
         )
-            .addSwipeRightBackgroundColor(doneColor)
-            .addSwipeRightLabel(context.getString(R.string.done))
-            .setSwipeRightLabelColor(ContextCompat.getColor(context, R.color.white))
-            .addSwipeRightActionIcon(doneIcon)
+            .addSwipeRightBackgroundColor(backgroundColor)
+            .addSwipeRightLabel(actionLabel)
+            .setSwipeRightLabelColor(labelColor)
+            .addSwipeRightActionIcon(actionIcon)
             .create()
             .decorate()
     }
-
 }

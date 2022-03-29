@@ -21,6 +21,9 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
+    <style name="CustomChipStyle" parent="Widget.MaterialComponents.Chip.Choice">
+    </style>
+
     <style name="AppBarLayout">
         <item name="android:background">@color/white</item>
     </style>

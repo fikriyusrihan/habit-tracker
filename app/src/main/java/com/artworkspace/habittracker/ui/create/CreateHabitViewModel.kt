@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.artworkspace.habittracker.data.HabitRepository
 import com.artworkspace.habittracker.data.entity.Habit
-import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
 import com.artworkspace.habittracker.utils.todayTimestamp
@@ -44,6 +43,9 @@ class CreateHabitViewModel @Inject constructor(
         _checkedDays.value = booleanArrayOf(true, true, true, true, true, true, true)
     }
 
+    /**
+     * Save new habit to database
+     */
     fun saveNewHabit(habit: Habit, weeklyTargetArray: BooleanArray?) {
         viewModelScope.launch {
             val habitId = habitRepository.insertHabit(habit)
@@ -60,31 +62,35 @@ class CreateHabitViewModel @Inject constructor(
                 sun = weeklyTargetArray?.get(6) ?: true
             )
 
-            val record = Record(
-                id = null,
-                habitId = habitId,
-                isChecked = false,
-                timestamp = habit.startAt
-            )
-
             habitRepository.insertWeeklyTarget(weeklyTarget)
-            habitRepository.insertDailyRecord(record)
         }
     }
 
+    /**
+     * Saving startAtTimestamp state from the UI
+     */
     fun setStartAtTimestamp(timeInMillis: Long) {
         _startAtTimestamp.value = timeInMillis
     }
 
+    /**
+     * Saving reminder state from the UI
+     */
     fun setReminderTime(time: ReminderTime) {
         _reminder.value = time
     }
 
+    /**
+     * Saving checkedDays state from the UI
+     */
     fun setCheckedDays(checkedDays: BooleanArray?) {
         val default = booleanArrayOf(true, true, true, true, true, true, true)
         _checkedDays.value = checkedDays ?: default
     }
 
+    /**
+     * Saving icon state from the UI
+     */
     fun setIcon(icon: Icon?) {
         _icon.value = icon
     }

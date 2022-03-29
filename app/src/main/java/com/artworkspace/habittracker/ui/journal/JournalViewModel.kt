@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.artworkspace.habittracker.data.HabitRepository
 import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.data.entity.HabitRecord
 import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.utils.todayTimestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,40 +18,40 @@ import javax.inject.Inject
 class JournalViewModel @Inject constructor(private val habitRepository: HabitRepository) :
     ViewModel() {
 
-    init {
-        todayRecordInit()
-    }
-
-    fun getUncompletedHabit(timestamp: Long = todayTimestamp): Flow<List<Habit>> =
+    fun getUncompletedHabit(timestamp: Long = todayTimestamp): Flow<List<HabitRecord>> =
         habitRepository.getUncompletedHabit(timestamp)
 
-    private fun todayRecordInit() {
+    fun getCompletedHabit(timestamp: Long = todayTimestamp): Flow<List<HabitRecord>> =
+        habitRepository.getCompletedHabit(timestamp)
+
+    fun todayRecordInit() {
         viewModelScope.launch {
             val count = habitRepository.getRecordSizeByTimestamp()
-            val habits = habitRepository.getAllStartedHabit()
 
-            if (habits.size != count) {
-                habits.forEach { habit ->
-                    val record = habitRepository.getHabitRecord(habit.id!!)
-                    if (record == null) {
-                        val newRecord = Record(
-                            id = null,
-                            habitId = habit.id,
-                            isChecked = false,
-                            timestamp = todayTimestamp
-                        )
-                        habitRepository.insertDailyRecord(newRecord)
+            habitRepository.getAllStartedHabit().collect { habits ->
+                if (habits.size != count) {
+                    habits.forEach { habit ->
+                        val oldRecord = habitRepository.getHabitRecord(habit)
+                        if (oldRecord == null) {
+                            val newRecord = Record(
+                                id = null,
+                                habitId = habit.id!!,
+                                isChecked = false,
+                                timestamp = todayTimestamp
+                            )
+                            habitRepository.insertDailyRecord(newRecord)
+                        }
                     }
-                }
 
-                Log.d(TAG, "todayRecordInit: called")
+                    Log.d(TAG, "todayRecordInit: called")
+                }
             }
         }
     }
 
-    fun setHabitAsDone(habit: Habit, timestamp: Long = todayTimestamp) {
+    fun setHabitRecordCheck(habit: Habit, isChecked: Boolean, timestamp: Long = todayTimestamp) {
         viewModelScope.launch {
-            habitRepository.setHabitAsDone(habit, timestamp)
+            habitRepository.setHabitRecordCheck(habit, isChecked, timestamp)
         }
     }
 
