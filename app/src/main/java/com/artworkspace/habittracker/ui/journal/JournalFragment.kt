@@ -16,19 +16,28 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.artworkspace.habittracker.BaseApplication
 import com.artworkspace.habittracker.R
+import com.artworkspace.habittracker.adapter.ListCalendarAdapter
 import com.artworkspace.habittracker.adapter.ListHabitAdapter
-import com.artworkspace.habittracker.adapter.OnItemClickCallback
 import com.artworkspace.habittracker.adapter.SwipeGesture
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.HabitRecord
 import com.artworkspace.habittracker.databinding.FragmentJournalBinding
 import com.artworkspace.habittracker.ui.create.CreateHabitActivity
+import com.artworkspace.habittracker.utils.todayTimestamp
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class JournalFragment : Fragment() {
+
+    private lateinit var listUncompletedHabit: ListHabitAdapter
+    private lateinit var listCompletedHabit: ListHabitAdapter
+
+    private var getUncompletedHabitJob: Job = Job()
+    private var getCompletedHabitJob: Job = Job()
+    private var selectedTimestamp = todayTimestamp
 
     private var _binding: FragmentJournalBinding? = null
     private val binding get() = _binding!!
@@ -47,31 +56,14 @@ class JournalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val listUncompletedHabit =
-            ListHabitAdapter(requireActivity().application as BaseApplication)
+        listUncompletedHabit = ListHabitAdapter(requireActivity().application as BaseApplication)
         setUncompletedHabitRecyclerView(listUncompletedHabit)
 
-        val listCompletedHabit = ListHabitAdapter(requireActivity().application as BaseApplication)
+        listCompletedHabit = ListHabitAdapter(requireActivity().application as BaseApplication)
         setCompletedHabitRecyclerView(listCompletedHabit)
 
-        lifecycleScope.launchWhenStarted {
-            launch {
-                journalViewModel.getUncompletedHabit().collect { habits ->
-                    listUncompletedHabit.submitList(habits)
-                }
-            }
-
-            launch {
-                journalViewModel.getCompletedHabit().collect { habits ->
-                    listCompletedHabit.submitList(habits)
-
-                    if (habits.isEmpty()) {
-                        binding.tvCountCompleted.visibility = View.GONE
-                    } else {
-                        binding.tvCountCompleted.visibility = View.VISIBLE
-                    }
-                }
-            }
+        journalViewModel.calendarHorizontalData.observe(viewLifecycleOwner) { calendarData ->
+            setHorizontalCalendar(calendarData)
         }
 
         binding.apply {
@@ -85,7 +77,8 @@ class JournalFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        journalViewModel.todayRecordInit()
+        getAllHabitRecord(selectedTimestamp)
+        journalViewModel.recordInit(selectedTimestamp)
     }
 
     override fun onDestroyView() {
@@ -93,9 +86,7 @@ class JournalFragment : Fragment() {
         _binding = null
     }
 
-    private fun showMessage(isVisible: Boolean) {
-        val messageView = binding.tvHabitMessage
-
+    private fun animateViewVisibility(isVisible: Boolean, messageView: View) {
         if (isVisible) {
             messageView.apply {
                 alpha = 0f
@@ -103,20 +94,66 @@ class JournalFragment : Fragment() {
 
                 animate()
                     .alpha(1f)
-                    .setDuration(300L)
+                    .setDuration(200L)
                     .setListener(null)
             }
 
         } else {
             messageView.animate()
                 .alpha(0f)
-                .setDuration(300L)
+                .setDuration(200L)
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator?) {
                         messageView.visibility = View.GONE
                     }
                 })
         }
+    }
+
+    private fun getAllHabitRecord(timestamp: Long) {
+        if (getUncompletedHabitJob.isActive) getUncompletedHabitJob.cancel()
+        if (getCompletedHabitJob.isActive) getCompletedHabitJob.cancel()
+
+        lifecycleScope.launchWhenStarted {
+            getUncompletedHabitJob = launch {
+                journalViewModel.getUncompletedHabit(timestamp).collect { habits ->
+                    listUncompletedHabit.submitList(habits)
+                }
+            }
+
+            getCompletedHabitJob = launch {
+                journalViewModel.getCompletedHabit(timestamp).collect { habits ->
+                    listCompletedHabit.submitList(habits)
+                    habits.isNotEmpty().let { visibility ->
+                        animateViewVisibility(visibility, binding.tvCountCompleted)
+                        animateViewVisibility(visibility, binding.rvHabitCompleted)
+                        animateViewVisibility(visibility, binding.dividerTop)
+                        animateViewVisibility(visibility, binding.dividerBottom)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setHorizontalCalendar(calendarData: ArrayList<Long>) {
+        val linearLayoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        val calendarAdapter = ListCalendarAdapter(calendarData, requireContext())
+
+        binding.rvHorizontalCalendar.apply {
+            layoutManager = linearLayoutManager
+            adapter = calendarAdapter
+            scrollToPosition(calendarData.indexOf(todayTimestamp))
+        }
+
+        calendarAdapter.setOnItemClickCallback(object : ListCalendarAdapter.OnItemClickCallback {
+            override fun onItemClicked(timestamp: Long) {
+                getAllHabitRecord(timestamp)
+                journalViewModel.recordInit(timestamp)
+
+                selectedTimestamp = timestamp
+            }
+        })
     }
 
     private fun setCompletedHabitRecyclerView(listAdapter: ListHabitAdapter) {
@@ -140,11 +177,11 @@ class JournalFragment : Fragment() {
                         startAt = habitRecord.startAt,
                         createdAt = habitRecord.createdAt
                     )
-                    journalViewModel.setHabitRecordCheck(habit, false)
+                    journalViewModel.setHabitRecordCheck(habit, false, selectedTimestamp)
                 }
             }
 
-        listAdapter.setOnItemClickCallback(object : OnItemClickCallback {
+        listAdapter.setOnItemClickCallback(object : ListHabitAdapter.OnItemClickCallback {
             override fun onItemClicked(habit: HabitRecord) {
                 Toast.makeText(requireContext(), "Hi", Toast.LENGTH_SHORT).show()
             }
@@ -153,6 +190,8 @@ class JournalFragment : Fragment() {
         binding.rvHabitCompleted.apply {
             layoutManager = linearLayoutManager
             adapter = listAdapter
+            itemAnimator = null
+
             ItemTouchHelper(swipeGesture).attachToRecyclerView(this)
         }
     }
@@ -178,11 +217,11 @@ class JournalFragment : Fragment() {
                         startAt = habitRecord.startAt,
                         createdAt = habitRecord.createdAt
                     )
-                    journalViewModel.setHabitRecordCheck(habit, true)
+                    journalViewModel.setHabitRecordCheck(habit, true, selectedTimestamp)
                 }
             }
 
-        listAdapter.setOnItemClickCallback(object : OnItemClickCallback {
+        listAdapter.setOnItemClickCallback(object : ListHabitAdapter.OnItemClickCallback {
             override fun onItemClicked(habit: HabitRecord) {
                 Toast.makeText(requireContext(), "Hi", Toast.LENGTH_SHORT).show()
             }
@@ -191,6 +230,8 @@ class JournalFragment : Fragment() {
         binding.rvHabitNotCompleted.apply {
             layoutManager = linearLayoutManager
             adapter = listAdapter
+            itemAnimator = null
+
             ItemTouchHelper(swipeGesture).attachToRecyclerView(this)
         }
     }
