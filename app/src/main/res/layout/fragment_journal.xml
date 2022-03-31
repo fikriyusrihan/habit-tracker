@@ -51,9 +51,9 @@
     <TextView
         android:id="@+id/tv_habit_message"
         android:layout_width="wrap_content"
-        android:visibility="gone"
         android:layout_height="wrap_content"
         android:text="@string/please_create_a_new_habit"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,7 +92,7 @@
                 android:paddingHorizontal="18dp"
                 android:paddingVertical="16dp"
                 android:text="@string/completed"
-                android:visibility="visible"/>
+                android:visibility="visible" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_habit_completed"
