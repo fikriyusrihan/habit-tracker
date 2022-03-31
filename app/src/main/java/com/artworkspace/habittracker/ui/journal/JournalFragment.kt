@@ -28,6 +28,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @AndroidEntryPoint
 class JournalFragment : Fragment() {
@@ -77,8 +79,10 @@ class JournalFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        getAllHabitRecord(selectedTimestamp)
+
+        // Initialize record first then get all habit's record
         journalViewModel.recordInit(selectedTimestamp)
+        getAllHabitRecord(selectedTimestamp)
     }
 
     override fun onDestroyView() {
@@ -86,9 +90,15 @@ class JournalFragment : Fragment() {
         _binding = null
     }
 
-    private fun animateViewVisibility(isVisible: Boolean, messageView: View) {
+    /**
+     * Animate view's visibility with crossfade effect
+     *
+     * @param isVisible visibility setting
+     * @param view view to apply the animation
+     */
+    private fun animateViewVisibility(isVisible: Boolean, view: View) {
         if (isVisible) {
-            messageView.apply {
+            view.apply {
                 alpha = 0f
                 visibility = View.VISIBLE
 
@@ -99,18 +109,24 @@ class JournalFragment : Fragment() {
             }
 
         } else {
-            messageView.animate()
+            view.animate()
                 .alpha(0f)
                 .setDuration(200L)
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator?) {
-                        messageView.visibility = View.GONE
+                        view.visibility = View.GONE
                     }
                 })
         }
     }
 
+    /**
+     * Get all habit record by timestamp
+     *
+     * @param timestamp habit record's timestamp
+     */
     private fun getAllHabitRecord(timestamp: Long) {
+        // Make sure only one job for each habit status is active and cancel previous job before starting new job
         if (getUncompletedHabitJob.isActive) getUncompletedHabitJob.cancel()
         if (getCompletedHabitJob.isActive) getCompletedHabitJob.cancel()
 
@@ -118,6 +134,7 @@ class JournalFragment : Fragment() {
             getUncompletedHabitJob = launch {
                 journalViewModel.getUncompletedHabit(timestamp).collect { habits ->
                     listUncompletedHabit.submitList(habits)
+                    animateViewVisibility(habits.isNotEmpty(), binding.rvHabitNotCompleted)
                 }
             }
 
@@ -128,13 +145,17 @@ class JournalFragment : Fragment() {
                         animateViewVisibility(visibility, binding.tvCountCompleted)
                         animateViewVisibility(visibility, binding.rvHabitCompleted)
                         animateViewVisibility(visibility, binding.dividerTop)
-                        animateViewVisibility(visibility, binding.dividerBottom)
                     }
                 }
             }
         }
     }
 
+    /**
+     * Set the horizontal calendar to the RecyclerView
+     *
+     * @param calendarData array of calendar to display
+     */
     private fun setHorizontalCalendar(calendarData: ArrayList<Long>) {
         val linearLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -148,14 +169,21 @@ class JournalFragment : Fragment() {
 
         calendarAdapter.setOnItemClickCallback(object : ListCalendarAdapter.OnItemClickCallback {
             override fun onItemClicked(timestamp: Long) {
-                getAllHabitRecord(timestamp)
+                // Initialize record first then get all habit's record
                 journalViewModel.recordInit(timestamp)
+                getAllHabitRecord(timestamp)
 
+                setToolbarDate(timestamp)
                 selectedTimestamp = timestamp
             }
         })
     }
 
+    /**
+     * Set the completed habit to the RecyclerView. Call this function after the listAdapter has initialized
+     *
+     * @param listAdapter ListHabitAdapter
+     */
     private fun setCompletedHabitRecyclerView(listAdapter: ListHabitAdapter) {
         val linearLayoutManager = LinearLayoutManager(requireContext())
 
@@ -190,12 +218,16 @@ class JournalFragment : Fragment() {
         binding.rvHabitCompleted.apply {
             layoutManager = linearLayoutManager
             adapter = listAdapter
-            itemAnimator = null
 
             ItemTouchHelper(swipeGesture).attachToRecyclerView(this)
         }
     }
 
+    /**
+     * Set the completed habit to the RecyclerView. Call this function after the listAdapter has initialized
+     *
+     * @param listAdapter ListHabitAdapter
+     */
     private fun setUncompletedHabitRecyclerView(listAdapter: ListHabitAdapter) {
         val linearLayoutManager = LinearLayoutManager(requireContext())
 
@@ -230,9 +262,34 @@ class JournalFragment : Fragment() {
         binding.rvHabitNotCompleted.apply {
             layoutManager = linearLayoutManager
             adapter = listAdapter
-            itemAnimator = null
 
             ItemTouchHelper(swipeGesture).attachToRecyclerView(this)
+        }
+    }
+
+    /**
+     * UI logic for setting date on the toolbar
+     *
+     * @param timestamp selected timestmap
+     */
+    private fun setToolbarDate(timestamp: Long) {
+        val sdf = SimpleDateFormat.getDateInstance()
+
+        if (timestamp != todayTimestamp) {
+            val date = Date(timestamp)
+            val txtDate = sdf.format(date)
+
+            binding.toolbarTitleSecondary.let { view ->
+                animateViewVisibility(false, view)
+                view.text = txtDate
+                animateViewVisibility(true, view)
+            }
+        } else {
+            binding.toolbarTitleSecondary.let { view ->
+                animateViewVisibility(false, view)
+                view.text = getString(R.string.today)
+                animateViewVisibility(true, view)
+            }
         }
     }
 }

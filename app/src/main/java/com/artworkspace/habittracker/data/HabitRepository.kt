@@ -7,6 +7,8 @@ import com.artworkspace.habittracker.data.entity.WeeklyTarget
 import com.artworkspace.habittracker.data.room.HabitDao
 import com.artworkspace.habittracker.utils.todayTimestamp
 import kotlinx.coroutines.flow.Flow
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 class HabitRepository @Inject constructor(
@@ -66,6 +68,30 @@ class HabitRepository @Inject constructor(
      */
     suspend fun getHabitRecord(habit: Habit, timestamp: Long = todayTimestamp): Record? =
         habitDao.getHabitRecord(habit.id!!, timestamp)
+
+    /**
+     * Determine a Habit is repeated today or not based on timestamp
+     *
+     * @param habit Habit to check
+     * @param timestamp Timestamp to check
+     */
+    suspend fun isHabitRepeatToday(habit: Habit, timestamp: Long): Boolean {
+        val sdf = SimpleDateFormat("EEE", Locale.ENGLISH)
+        val date = Date(timestamp)
+        val txtDay = sdf.format(date).uppercase()
+
+        val weeklyTarget = habitDao.getHabitWeeklyTarget(habit.id!!)
+        val map = mapOf(
+            "MON" to weeklyTarget.component3(),
+            "TUE" to weeklyTarget.component4(),
+            "WED" to weeklyTarget.component5(),
+            "THU" to weeklyTarget.component6(),
+            "FRI" to weeklyTarget.component7(),
+            "SAT" to weeklyTarget.component8(),
+            "SUN" to weeklyTarget.component9()
+        )
+        return map[txtDay] ?: false
+    }
 
     /**
      * Insert weekly target data of a habit to the database

@@ -35,6 +35,9 @@ interface HabitDao {
     @Query("SELECT * FROM record WHERE habit_id = :id AND timestamp = :timestamp")
     suspend fun getHabitRecord(id: Long, timestamp: Long): Record?
 
+    @Query("SELECT * FROM weeklytarget WHERE habit_id = :id")
+    suspend fun getHabitWeeklyTarget(id: Long): WeeklyTarget
+
     @Update
     suspend fun updateRecord(record: Record)
 

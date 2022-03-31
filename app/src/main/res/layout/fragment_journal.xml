@@ -92,13 +92,7 @@
                 android:paddingHorizontal="18dp"
                 android:paddingVertical="16dp"
                 android:text="@string/completed"
-                android:visibility="visible"
-                app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_down_24" />
-
-            <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/divider_bottom"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:visibility="visible"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_habit_completed"

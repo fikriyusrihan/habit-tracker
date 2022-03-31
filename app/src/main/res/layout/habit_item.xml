@@ -25,7 +25,7 @@
         android:layout_marginStart="16dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/iv_completed_icon"
         app:layout_constraintStart_toEndOf="@+id/iv_habit_icon"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -43,7 +43,18 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="@string/not_completed" />
-
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_completed_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@string/complete_icon"
+        android:src="@drawable/ic_baseline_check_24"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

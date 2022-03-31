@@ -18,9 +18,6 @@ class ListCalendarAdapter(private val calendarData: ArrayList<Long>, private val
     private lateinit var onItemClickListener: OnItemClickCallback
     private var selectedIndex = calendarData.indexOf(todayTimestamp)
 
-    inner class ViewHolder(var binding: CalendarItemBinding) : RecyclerView.ViewHolder(binding.root)
-
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val viewHolder = ViewHolder(
             CalendarItemBinding.inflate(
@@ -31,12 +28,14 @@ class ListCalendarAdapter(private val calendarData: ArrayList<Long>, private val
         )
 
         viewHolder.itemView.setOnClickListener {
+            // Update highlight for selected date
             val position = viewHolder.bindingAdapterPosition
             if (position != selectedIndex) {
                 notifyItemChanged(selectedIndex)
                 selectedIndex = viewHolder.bindingAdapterPosition
                 notifyItemChanged(selectedIndex)
             }
+
             onItemClickListener.onItemClicked(calendarData[position])
         }
 
@@ -61,6 +60,9 @@ class ListCalendarAdapter(private val calendarData: ArrayList<Long>, private val
 
     override fun getItemCount(): Int = calendarData.size
 
+    /**
+     * UI logic for the selected item
+     */
     private fun makeItemSelected(holder: ViewHolder) {
         holder.binding.apply {
             tvDate.setTextColor(ContextCompat.getColor(context, R.color.blue_500))
@@ -69,6 +71,9 @@ class ListCalendarAdapter(private val calendarData: ArrayList<Long>, private val
         }
     }
 
+    /**
+     * UI logic for unselected items
+     */
     private fun makeItemDefault(holder: ViewHolder) {
         holder.binding.apply {
             tvDate.setTextColor(Color.GRAY)
@@ -77,9 +82,14 @@ class ListCalendarAdapter(private val calendarData: ArrayList<Long>, private val
         }
     }
 
+    /**
+     * OnItemClickCallback setter for ListCalendarAdapter
+     */
     fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
         this.onItemClickListener = onItemClickCallback
     }
+
+    inner class ViewHolder(var binding: CalendarItemBinding) : RecyclerView.ViewHolder(binding.root)
 
     interface OnItemClickCallback {
         fun onItemClicked(timestamp: Long)

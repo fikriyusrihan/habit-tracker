@@ -27,12 +27,27 @@ class JournalViewModel @Inject constructor(private val habitRepository: HabitRep
         getHorizontalCalendarData()
     }
 
+    /**
+     * Get all uncompleted habit by its timestamp
+     *
+     * @param timestamp Habit record's timestamp to fetch, default value is today timestamp
+     */
     fun getUncompletedHabit(timestamp: Long = todayTimestamp): Flow<List<HabitRecord>> =
         habitRepository.getUncompletedHabit(timestamp)
 
+    /**
+     * Get all completed habit by its timestamp
+     *
+     * @param timestamp Habit record's timestamp to fetch, default value is today timestamp
+     */
     fun getCompletedHabit(timestamp: Long = todayTimestamp): Flow<List<HabitRecord>> =
         habitRepository.getCompletedHabit(timestamp)
 
+    /**
+     * Initialize record for every habit if that habit still doesn't have any record at that timestamp
+     *
+     * @param timestamp Habit record's timestamp will be checked and initialize
+     */
     fun recordInit(timestamp: Long) {
         viewModelScope.launch {
             val count = habitRepository.getRecordSizeByTimestamp(timestamp)
@@ -41,7 +56,8 @@ class JournalViewModel @Inject constructor(private val habitRepository: HabitRep
                 if (habits.size != count) {
                     habits.forEach { habit ->
                         val oldRecord = habitRepository.getHabitRecord(habit, timestamp)
-                        if (oldRecord == null) {
+                        val isTodayRepeat = habitRepository.isHabitRepeatToday(habit, timestamp)
+                        if (oldRecord == null && isTodayRepeat) {
                             val newRecord = Record(
                                 id = null,
                                 habitId = habit.id!!,
@@ -56,12 +72,22 @@ class JournalViewModel @Inject constructor(private val habitRepository: HabitRep
         }
     }
 
+    /**
+     * Mark the habit record at its timestamp as completed or not completed
+     *
+     * @param habit Habit to modify its record
+     * @param isChecked Determine status of the Habit
+     * @param timestamp Habit record's timestamp to modify, default value is today timestamp
+     */
     fun setHabitRecordCheck(habit: Habit, isChecked: Boolean, timestamp: Long = todayTimestamp) {
         viewModelScope.launch {
             habitRepository.setHabitRecordCheck(habit, isChecked, timestamp)
         }
     }
 
+    /**
+     * Create initial calendar data and store the data to `_calendarHorizontalData`
+     */
     private fun getHorizontalCalendarData() {
         val calendarData = arrayListOf<Long>()
         val calendar = Calendar.getInstance()

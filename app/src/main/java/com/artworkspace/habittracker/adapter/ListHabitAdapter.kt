@@ -2,6 +2,7 @@ package com.artworkspace.habittracker.adapter
 
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -40,6 +41,13 @@ class ListHabitAdapter(private val application: BaseApplication) :
         holder.bind(getItem(position))
     }
 
+    /**
+     * OnItemClickCallback setter for ListHabitAdapter
+     */
+    fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
+        this.onItemClickCallback = onItemClickCallback
+    }
+
     inner class ListViewHolder(var binding: HabitItemBinding, var application: BaseApplication) :
         RecyclerView.ViewHolder(binding.root) {
         private val iconPack = application.iconPack
@@ -57,24 +65,25 @@ class ListHabitAdapter(private val application: BaseApplication) :
 
             binding.apply {
                 if (habit.isChecked) {
+                    ivCompletedIcon.visibility = View.VISIBLE
                     tvHabitStatus.text = application.getString(R.string.completed)
-                    ivHabitIcon.setColorFilter(Color.WHITE)
-                    ivHabitIcon.setBackgroundResource(R.drawable.icon_background_circle_dark)
+
                     root.setBackgroundColor(
                         ContextCompat.getColor(
                             itemView.context,
                             R.color.light_grey
                         )
                     )
+
+                    ivHabitIcon.apply {
+                        setColorFilter(Color.WHITE)
+                        setBackgroundResource(R.drawable.icon_background_circle_dark)
+                    }
                 }
 
                 tvHabitTitle.text = habit.name
             }
         }
-    }
-
-    fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
-        this.onItemClickCallback = onItemClickCallback
     }
 
     interface OnItemClickCallback {
