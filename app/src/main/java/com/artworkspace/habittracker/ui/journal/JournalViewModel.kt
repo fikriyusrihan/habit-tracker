@@ -55,16 +55,22 @@ class JournalViewModel @Inject constructor(private val habitRepository: HabitRep
             habitRepository.getAllStartedHabit(timestamp).collect { habits ->
                 if (habits.size != count) {
                     habits.forEach { habit ->
-                        val oldRecord = habitRepository.getHabitRecord(habit, timestamp)
-                        val isTodayRepeat = habitRepository.isHabitRepeatToday(habit, timestamp)
-                        if (oldRecord == null && isTodayRepeat) {
-                            val newRecord = Record(
-                                id = null,
-                                habitId = habit.id!!,
-                                isChecked = false,
-                                timestamp = timestamp
-                            )
-                            habitRepository.insertDailyRecord(newRecord)
+                        var startAt = habit.startAt
+
+                        while (startAt <= todayTimestamp + (24 * 60 * 60 * 1000)) {
+                            val oldRecord = habitRepository.getHabitRecord(habit, startAt)
+                            val isTodayRepeat = habitRepository.isHabitRepeatToday(habit, startAt)
+                            if (oldRecord == null && isTodayRepeat) {
+                                val newRecord = Record(
+                                    id = null,
+                                    habitId = habit.id!!,
+                                    isChecked = false,
+                                    timestamp = startAt
+                                )
+                                habitRepository.insertDailyRecord(newRecord)
+                            }
+
+                            startAt += (24 * 60 * 60 * 1000)
                         }
                     }
                 }

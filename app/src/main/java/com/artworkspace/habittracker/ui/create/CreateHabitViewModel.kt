@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.artworkspace.habittracker.data.HabitRepository
 import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
 import com.artworkspace.habittracker.utils.todayTimestamp
@@ -46,7 +47,7 @@ class CreateHabitViewModel @Inject constructor(
     /**
      * Save new habit to database
      */
-    fun saveNewHabit(habit: Habit, weeklyTargetArray: BooleanArray?) {
+    fun saveNewHabit(habit: Habit, weeklyTargetArray: BooleanArray?, reminderTime: ReminderTime) {
         viewModelScope.launch {
             val habitId = habitRepository.insertHabit(habit)
 
@@ -62,7 +63,15 @@ class CreateHabitViewModel @Inject constructor(
                 sun = weeklyTargetArray?.get(6) ?: true
             )
 
+            val reminder = ReminderTime(
+                id = null,
+                habitId = habitId,
+                hour = reminderTime.hour,
+                minute = reminderTime.minute
+            )
+
             habitRepository.insertWeeklyTarget(weeklyTarget)
+            habitRepository.insertReminderTime(reminder)
         }
     }
 

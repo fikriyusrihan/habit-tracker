@@ -1,6 +1,5 @@
 package com.artworkspace.habittracker.ui.create
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
@@ -128,9 +127,8 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
     /**
      * Set default reminder for every new habit
      */
-    @SuppressLint("SimpleDateFormat")
     private fun setDefaultReminder(time: ReminderTime) {
-        val sdf = SimpleDateFormat("h:mm a")
+        val sdf = SimpleDateFormat("h:mm a", Locale.ENGLISH)
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, time.hour)
             set(Calendar.MINUTE, time.minute)
@@ -152,7 +150,7 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
             .build()
             .apply {
                 addOnPositiveButtonClickListener {
-                    val reminderTime = ReminderTime(this.hour, this.minute)
+                    val reminderTime = ReminderTime(hour = this.hour, minute = this.minute)
                     viewModel.setReminderTime(reminderTime)
                 }
                 show(supportFragmentManager, TIME_PICKER_TAG)
@@ -228,7 +226,8 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
                     startAt = startAt,
                     createdAt = Calendar.getInstance().timeInMillis
                 ),
-                weeklyTargetArray = checkedDaysState
+                weeklyTargetArray = checkedDaysState,
+                reminderTime = reminderState!!
             )
 
             Toast.makeText(this, getString(R.string.new_habit_created), Toast.LENGTH_SHORT).show()

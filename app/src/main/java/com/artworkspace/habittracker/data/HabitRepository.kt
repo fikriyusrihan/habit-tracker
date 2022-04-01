@@ -1,11 +1,10 @@
 package com.artworkspace.habittracker.data
 
-import com.artworkspace.habittracker.data.entity.Habit
-import com.artworkspace.habittracker.data.entity.HabitRecord
-import com.artworkspace.habittracker.data.entity.Record
-import com.artworkspace.habittracker.data.entity.WeeklyTarget
+import androidx.lifecycle.LiveData
+import com.artworkspace.habittracker.data.entity.*
 import com.artworkspace.habittracker.data.room.HabitDao
 import com.artworkspace.habittracker.utils.todayTimestamp
+import com.artworkspace.habittracker.utils.tomorrowTimestamp
 import kotlinx.coroutines.flow.Flow
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,6 +31,11 @@ class HabitRepository @Inject constructor(
      */
     fun getAllStartedHabit(timestamp: Long = todayTimestamp): Flow<List<Habit>> =
         habitDao.getAllStartedHabit(timestamp)
+
+    fun getReminderTime(habit: Habit): LiveData<ReminderTime> =
+        habitDao.getHabitReminderTime(habit.id!!)
+
+    fun getAllHabitRecords(habit: Habit): LiveData<List<Record>> = habitDao.getAllRecord(habit.id!!)
 
     /**
      * Set habit record completion status by isChecked value.
@@ -70,6 +74,31 @@ class HabitRepository @Inject constructor(
         habitDao.getHabitRecord(habit.id!!, timestamp)
 
     /**
+     * Get weekly target by habit id
+     */
+    suspend fun getWeeklyTargetByHabit(habit: Habit): WeeklyTarget =
+        habitDao.getHabitWeeklyTarget(habit.id!!)
+
+    /**
+     * Count total completed of a habit
+     */
+    suspend fun getCountCompletedHabit(habit: Habit): Int =
+        habitDao.getCountCompletedHabit(habit.id!!)
+
+    /**
+     * Count total habit's record
+     */
+    suspend fun getCountAllHabitRecord(habit: Habit): Int {
+        var countAllHabitRecord = habitDao.getCountAllHabitRecord(habit.id!!)
+
+        if (isHabitRepeatToday(habit, tomorrowTimestamp)) {
+            countAllHabitRecord--
+        }
+
+        return countAllHabitRecord
+    }
+
+    /**
      * Determine a Habit is repeated today or not based on timestamp
      *
      * @param habit Habit to check
@@ -94,6 +123,12 @@ class HabitRepository @Inject constructor(
     }
 
     /**
+     * Insert reminder time data of a habit to the database
+     */
+    suspend fun insertReminderTime(reminderTime: ReminderTime) =
+        habitDao.insertReminderTime(reminderTime)
+
+    /**
      * Insert weekly target data of a habit to the database
      */
     suspend fun insertWeeklyTarget(weeklyTarget: WeeklyTarget) =
@@ -108,4 +143,13 @@ class HabitRepository @Inject constructor(
      * Insert new daily record to the database
      */
     suspend fun insertDailyRecord(record: Record) = habitDao.insertRecord(record)
+
+    suspend fun deleteHabit(habit: Habit) {
+        val id = habit.id!!
+
+        habitDao.deleteHabit(id)
+        habitDao.deleteAllRecordsByHabitId(id)
+        habitDao.deleteWeeklyTargetByHabitId(id)
+        habitDao.deleteReminderTimeByHabitId(id)
+    }
 }

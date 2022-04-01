@@ -14,3 +14,14 @@ val todayTimestamp: Long
 
         return calendar.timeInMillis
     }
+
+val tomorrowTimestamp: Long
+    get() {
+        val calendar = Calendar.getInstance()
+        calendar.apply {
+            timeInMillis = todayTimestamp
+            add(Calendar.DATE, 1)
+        }
+
+        return calendar.timeInMillis
+    }

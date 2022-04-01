@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +22,8 @@ import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.HabitRecord
 import com.artworkspace.habittracker.databinding.FragmentJournalBinding
 import com.artworkspace.habittracker.ui.create.CreateHabitActivity
+import com.artworkspace.habittracker.ui.detail.DetailActivity
+import com.artworkspace.habittracker.ui.detail.DetailActivity.Companion.EXTRA_DETAIL
 import com.artworkspace.habittracker.utils.todayTimestamp
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -40,6 +41,7 @@ class JournalFragment : Fragment() {
     private var getUncompletedHabitJob: Job = Job()
     private var getCompletedHabitJob: Job = Job()
     private var selectedTimestamp = todayTimestamp
+    private var counterTodayHabit = 0
 
     private var _binding: FragmentJournalBinding? = null
     private val binding get() = _binding!!
@@ -129,11 +131,15 @@ class JournalFragment : Fragment() {
         // Make sure only one job for each habit status is active and cancel previous job before starting new job
         if (getUncompletedHabitJob.isActive) getUncompletedHabitJob.cancel()
         if (getCompletedHabitJob.isActive) getCompletedHabitJob.cancel()
+        counterTodayHabit = 0
 
         lifecycleScope.launchWhenStarted {
             getUncompletedHabitJob = launch {
                 journalViewModel.getUncompletedHabit(timestamp).collect { habits ->
                     listUncompletedHabit.submitList(habits)
+                    counterTodayHabit += habits.size
+
+                    animateViewVisibility(counterTodayHabit == 0, binding.tvHabitMessage)
                     animateViewVisibility(habits.isNotEmpty(), binding.rvHabitNotCompleted)
                 }
             }
@@ -141,11 +147,15 @@ class JournalFragment : Fragment() {
             getCompletedHabitJob = launch {
                 journalViewModel.getCompletedHabit(timestamp).collect { habits ->
                     listCompletedHabit.submitList(habits)
+                    counterTodayHabit += habits.size
+
                     habits.isNotEmpty().let { visibility ->
                         animateViewVisibility(visibility, binding.tvCountCompleted)
                         animateViewVisibility(visibility, binding.rvHabitCompleted)
                         animateViewVisibility(visibility, binding.dividerTop)
                     }
+
+                    animateViewVisibility(counterTodayHabit == 0, binding.tvHabitMessage)
                 }
             }
         }
@@ -211,7 +221,20 @@ class JournalFragment : Fragment() {
 
         listAdapter.setOnItemClickCallback(object : ListHabitAdapter.OnItemClickCallback {
             override fun onItemClicked(habit: HabitRecord) {
-                Toast.makeText(requireContext(), "Hi", Toast.LENGTH_SHORT).show()
+                val habitDetail = Habit(
+                    habit.id,
+                    habit.name,
+                    habit.icon,
+                    habit.description,
+                    habit.startAt,
+                    habit.createdAt
+                )
+
+                Intent(requireContext(), DetailActivity::class.java).apply {
+                    putExtra(EXTRA_DETAIL, habitDetail)
+                }.also { intent ->
+                    startActivity(intent)
+                }
             }
         })
 
@@ -255,7 +278,20 @@ class JournalFragment : Fragment() {
 
         listAdapter.setOnItemClickCallback(object : ListHabitAdapter.OnItemClickCallback {
             override fun onItemClicked(habit: HabitRecord) {
-                Toast.makeText(requireContext(), "Hi", Toast.LENGTH_SHORT).show()
+                val habitDetail = Habit(
+                    habit.id,
+                    habit.name,
+                    habit.icon,
+                    habit.description,
+                    habit.startAt,
+                    habit.createdAt
+                )
+
+                Intent(requireContext(), DetailActivity::class.java).apply {
+                    putExtra(EXTRA_DETAIL, habitDetail)
+                }.also { intent ->
+                    startActivity(intent)
+                }
             }
         })
 

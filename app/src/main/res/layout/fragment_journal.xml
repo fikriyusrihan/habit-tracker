@@ -83,6 +83,7 @@
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/divider_top"
                 android:layout_width="match_parent"
+                android:visibility="gone"
                 android:layout_height="wrap_content" />
 
             <TextView
@@ -92,7 +93,7 @@
                 android:paddingHorizontal="18dp"
                 android:paddingVertical="16dp"
                 android:text="@string/completed"
-                android:visibility="visible" />
+                android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_habit_completed"
