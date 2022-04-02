@@ -79,7 +79,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="@string/everyday"
+                            tools:text="@string/everyday"
                             android:textSize="16sp" />
 
                     </LinearLayout>
@@ -109,7 +109,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="@string/dummy_clock"
+                            tools:text="@string/dummy_clock"
                             android:textSize="16sp" />
 
                     </LinearLayout>
@@ -178,7 +178,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
-                        android:text="@string/_99_ndays"
+                        tools:text="@string/_99_ndays"
                         app:layout_constraintBottom_toTopOf="@+id/textView5"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -254,7 +254,7 @@
                             style="@style/Text.Card.Number"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/dummy_100" />
+                            tools:text="@string/dummy_100" />
 
 
                     </LinearLayout>
@@ -293,7 +293,7 @@
                             style="@style/Text.Card.Number"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/dummy_4" />
+                            tools:text="@string/dummy_4" />
 
                         <TextView
                             style="@style/Text.Card.Suffix"

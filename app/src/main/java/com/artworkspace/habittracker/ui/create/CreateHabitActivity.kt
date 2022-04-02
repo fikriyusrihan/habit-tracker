@@ -5,11 +5,13 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.artworkspace.habittracker.BaseApplication
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.databinding.ActivityNewHabitBinding
+import com.artworkspace.habittracker.notification.NotificationReceiver
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -19,6 +21,7 @@ import com.maltaisn.icondialog.IconDialogSettings
 import com.maltaisn.icondialog.data.Icon
 import com.maltaisn.icondialog.pack.IconPack
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,6 +29,7 @@ import java.util.*
 class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
 
     private lateinit var binding: ActivityNewHabitBinding
+    private lateinit var notificationReceiver: NotificationReceiver
 
     private var startAtState: Long? = null
     private var reminderState: ReminderTime? = null
@@ -40,6 +44,8 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
         super.onCreate(savedInstanceState)
         binding = ActivityNewHabitBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        notificationReceiver = NotificationReceiver()
 
         if (savedInstanceState != null) {
             binding.tvRepeatStatus.text = savedInstanceState.getString(REPEAT_STATUS)
@@ -217,18 +223,45 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
         if (name.isBlank()) {
             binding.etHabitTitle.error = getString(R.string.please_fill_this_field)
         } else {
-            viewModel.saveNewHabit(
-                habit = Habit(
-                    id = null,
+            val habit = Habit(
+                id = null,
+                name = name,
+                icon = icon,
+                description = description,
+                startAt = startAt,
+                createdAt = Calendar.getInstance().timeInMillis
+            )
+
+            lifecycleScope.launch {
+                val habitId = viewModel.saveNewHabit(
+                    habit = habit,
+                    weeklyTargetArray = checkedDaysState,
+                    reminderTime = reminderState!!
+                )
+
+                val calendar = Calendar.getInstance()
+                calendar.apply {
+                    set(Calendar.HOUR_OF_DAY, reminderState?.hour ?: 9)
+                    set(Calendar.MINUTE, reminderState?.minute ?: 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+                val storedHabit = Habit(
+                    id = habitId,
                     name = name,
                     icon = icon,
                     description = description,
                     startAt = startAt,
                     createdAt = Calendar.getInstance().timeInMillis
-                ),
-                weeklyTargetArray = checkedDaysState,
-                reminderTime = reminderState!!
-            )
+                )
+
+                notificationReceiver.setReminderNotification(
+                    this@CreateHabitActivity,
+                    storedHabit,
+                    calendar.timeInMillis
+                )
+            }
 
             Toast.makeText(this, getString(R.string.new_habit_created), Toast.LENGTH_SHORT).show()
             finish()

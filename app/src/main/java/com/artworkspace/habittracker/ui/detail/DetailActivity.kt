@@ -13,9 +13,9 @@ import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
 import com.artworkspace.habittracker.databinding.ActivityDetailBinding
+import com.artworkspace.habittracker.notification.NotificationReceiver
 import com.artworkspace.habittracker.utils.todayTimestamp
 import com.artworkspace.habittracker.utils.tomorrowTimestamp
-import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
@@ -27,6 +27,7 @@ class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
     private lateinit var habit: Habit
+    private lateinit var notificationReceiver: NotificationReceiver
 
     private val detailViewModel: DetailViewModel by viewModels()
 
@@ -35,7 +36,8 @@ class DetailActivity : AppCompatActivity() {
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        habit = intent.getParcelableExtra<Habit>(EXTRA_DETAIL)!!
+        habit = intent.getParcelableExtra(EXTRA_DETAIL)!!
+        notificationReceiver = NotificationReceiver()
 
         // Initialize data to fetch
         detailViewModel.apply {
@@ -97,6 +99,7 @@ class DetailActivity : AppCompatActivity() {
         }
         R.id.menu_delete -> {
             deleteHabit(habit)
+            notificationReceiver.cancelAlarm(this, habit)
             true
         }
         else -> {

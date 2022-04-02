@@ -36,7 +36,7 @@
                     android:padding="8dp"
                     android:src="@drawable/ic_baseline_close_24" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_save"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface HabitDao {
 
+    @Query("SELECT * FROM habit WHERE id = :id")
+    suspend fun getHabitById(id: Long): Habit?
+
     @Query(
         "SELECT habit.id, name, icon, description, is_checked, start_at, created_at " +
                 "FROM record " +

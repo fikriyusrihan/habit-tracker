@@ -3,16 +3,13 @@ package com.artworkspace.habittracker.ui.create
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.artworkspace.habittracker.data.HabitRepository
 import com.artworkspace.habittracker.data.entity.Habit
-import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
 import com.artworkspace.habittracker.utils.todayTimestamp
 import com.maltaisn.icondialog.data.Icon
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,32 +44,36 @@ class CreateHabitViewModel @Inject constructor(
     /**
      * Save new habit to database
      */
-    fun saveNewHabit(habit: Habit, weeklyTargetArray: BooleanArray?, reminderTime: ReminderTime) {
-        viewModelScope.launch {
-            val habitId = habitRepository.insertHabit(habit)
+    suspend fun saveNewHabit(
+        habit: Habit,
+        weeklyTargetArray: BooleanArray?,
+        reminderTime: ReminderTime
+    ): Long {
+        val habitId = habitRepository.insertHabit(habit)
 
-            val weeklyTarget = WeeklyTarget(
-                id = null,
-                habitId = habitId,
-                mon = weeklyTargetArray?.get(0) ?: true,
-                tue = weeklyTargetArray?.get(1) ?: true,
-                wed = weeklyTargetArray?.get(2) ?: true,
-                thu = weeklyTargetArray?.get(3) ?: true,
-                fri = weeklyTargetArray?.get(4) ?: true,
-                sat = weeklyTargetArray?.get(5) ?: true,
-                sun = weeklyTargetArray?.get(6) ?: true
-            )
+        val weeklyTarget = WeeklyTarget(
+            id = null,
+            habitId = habitId,
+            mon = weeklyTargetArray?.get(0) ?: true,
+            tue = weeklyTargetArray?.get(1) ?: true,
+            wed = weeklyTargetArray?.get(2) ?: true,
+            thu = weeklyTargetArray?.get(3) ?: true,
+            fri = weeklyTargetArray?.get(4) ?: true,
+            sat = weeklyTargetArray?.get(5) ?: true,
+            sun = weeklyTargetArray?.get(6) ?: true
+        )
 
-            val reminder = ReminderTime(
-                id = null,
-                habitId = habitId,
-                hour = reminderTime.hour,
-                minute = reminderTime.minute
-            )
+        val reminder = ReminderTime(
+            id = null,
+            habitId = habitId,
+            hour = reminderTime.hour,
+            minute = reminderTime.minute
+        )
 
-            habitRepository.insertWeeklyTarget(weeklyTarget)
-            habitRepository.insertReminderTime(reminder)
-        }
+        habitRepository.insertWeeklyTarget(weeklyTarget)
+        habitRepository.insertReminderTime(reminder)
+
+        return habitId
     }
 
     /**

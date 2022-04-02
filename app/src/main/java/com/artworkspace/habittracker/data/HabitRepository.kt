@@ -13,6 +13,12 @@ import javax.inject.Inject
 class HabitRepository @Inject constructor(
     private val habitDao: HabitDao
 ) {
+
+    /**
+     * Get a habit by id
+     */
+    suspend fun getHabitById(id: Long): Habit? = habitDao.getHabitById(id)
+
     /**
      * Get all uncompleted habit by timestamp
      */
@@ -32,9 +38,15 @@ class HabitRepository @Inject constructor(
     fun getAllStartedHabit(timestamp: Long = todayTimestamp): Flow<List<Habit>> =
         habitDao.getAllStartedHabit(timestamp)
 
+    /**
+     * Get all reminder time for a habit
+     */
     fun getReminderTime(habit: Habit): LiveData<ReminderTime> =
         habitDao.getHabitReminderTime(habit.id!!)
 
+    /**
+     * Get all records of a habit
+     */
     fun getAllHabitRecords(habit: Habit): LiveData<List<Record>> = habitDao.getAllRecord(habit.id!!)
 
     /**
@@ -144,6 +156,9 @@ class HabitRepository @Inject constructor(
      */
     suspend fun insertDailyRecord(record: Record) = habitDao.insertRecord(record)
 
+    /**
+     * Delete habit and its correspond entities (records, weekly target, and reminder time)
+     */
     suspend fun deleteHabit(habit: Habit) {
         val id = habit.id!!
 
