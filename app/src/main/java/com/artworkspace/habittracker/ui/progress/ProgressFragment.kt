@@ -8,17 +8,24 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.artworkspace.habittracker.R
+import com.artworkspace.habittracker.data.entity.Habit
+import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.databinding.FragmentProgressBinding
+import com.artworkspace.habittracker.utils.todayTimestamp
+import com.artworkspace.habittracker.utils.tomorrowTimestamp
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class ProgressFragment : Fragment() {
 
     private var _binding: FragmentProgressBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
+
     private val progressViewModel by viewModels<ProgressViewModel>()
 
     override fun onCreateView(
@@ -32,6 +39,23 @@ class ProgressFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        lifecycleScope.launchWhenStarted {
+            launch {
+                progressViewModel.getAllRecord().collect { records ->
+                    countCurrentStreak(records)
+                    countTotalHabitCompleted(records)
+                    countDailyAverage(records)
+                    countCompletionRate(records)
+                }
+            }
+
+            launch {
+                progressViewModel.getAllStartedHabit().collect { habits ->
+                    countStartedHabit(habits)
+                }
+            }
+        }
 
         binding.apply {
             btnShowInformation.setOnClickListener {
@@ -59,5 +83,77 @@ class ProgressFragment : Fragment() {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    private fun countCurrentStreak(records: List<Record>) {
+        var streakCounter = 0
+        var lastTimestamp = 0L
+
+        for (i in records.indices) {
+            if (!(records[i].isChecked)) {
+                if (!(records[i].timestamp == todayTimestamp || records[i].timestamp == tomorrowTimestamp)) break
+            } else {
+                if (lastTimestamp != records[i].timestamp) {
+                    streakCounter++
+                    lastTimestamp = records[i].timestamp
+                } else {
+                    continue
+                }
+            }
+        }
+
+        binding.tvCounterStreak.text = getString(R.string.streak_counter, streakCounter)
+    }
+
+    private fun countTotalHabitCompleted(records: List<Record>) {
+        var counter = 0
+        records.forEach { record ->
+            if (record.isChecked) counter++
+        }
+
+        binding.tvTotalCompleted.text = counter.toString()
+    }
+
+    private fun countStartedHabit(habits: List<Habit>) {
+        binding.tvStartedHabit.text = habits.size.toString()
+    }
+
+    private fun countDailyAverage(records: List<Record>) {
+        var daysCounter = 0
+        var completedHabitCounter = 0
+        var lastTimestamp = 0L
+
+        val sortedRecords = records.sortedByDescending {
+            it.timestamp
+        }
+
+        for (sortedRecord in sortedRecords) {
+            if (sortedRecord.timestamp != lastTimestamp) {
+                if (sortedRecord.timestamp == tomorrowTimestamp) {
+                    if (sortedRecord.isChecked) {
+                        daysCounter++
+                        lastTimestamp = sortedRecord.timestamp
+                    }
+                } else {
+                    daysCounter++
+                    lastTimestamp = sortedRecord.timestamp
+                }
+            }
+
+            if (sortedRecord.isChecked) completedHabitCounter++
+        }
+
+        val avg = completedHabitCounter.toDouble() / daysCounter
+        binding.tvAvgDaily.text = getString(R.string.double_placeholder, avg)
+    }
+
+    private fun countCompletionRate(records: List<Record>) {
+        val completedCounter =
+            records.filter { it.isChecked && it.timestamp <= todayTimestamp }.size
+        val recordSize = records.filter { it.timestamp <= todayTimestamp }.size
+        val completionRate = ((completedCounter.toDouble() / recordSize) * 100).toInt()
+        val string = "$completionRate %"
+
+        binding.tvCompletionRate.text = string
     }
 }

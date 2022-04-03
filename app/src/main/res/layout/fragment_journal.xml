@@ -83,8 +83,8 @@
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/divider_top"
                 android:layout_width="match_parent"
-                android:visibility="gone"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/tv_count_completed"

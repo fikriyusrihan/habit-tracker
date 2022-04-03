@@ -41,7 +41,7 @@
     <string name="graph">Graph</string>
     <string name="bar_chart">Bar Chart</string>
     <string name="dummy_99_plus">99+</string>
-    <string name="_99_ndays">99+ \ndays</string>
+    <string name="_99_ndays">- \ndays</string>
     <string name="add_habit">Add Habit</string>
     <string name="close">Close</string>
     <string name="save">Save</string>
@@ -89,4 +89,7 @@
     <string name="description">Description</string>
     <string name="reminder_notification_title">Don\'t lose your momentum🚀</string>
     <string name="reminder_notification_message">Let\'s build and track %s habit</string>
+    <string name="habit_lowercase">habit</string>
+    <string name="in_progress">In progress</string>
+    <string name="double_placeholder">%.1f</string>
 </resources>

@@ -61,6 +61,8 @@ class ListHabitAdapter(private val application: BaseApplication) :
             if (habit.icon != null) {
                 val icon = iconPack?.getIcon(habit.icon)
                 binding.ivHabitIcon.setImageDrawable(icon?.drawable)
+            } else {
+                binding.ivHabitIcon.setImageResource(R.drawable.ic_baseline_directions_run_24)
             }
 
             binding.apply {

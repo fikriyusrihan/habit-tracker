@@ -45,9 +45,15 @@ class HabitRepository @Inject constructor(
         habitDao.getHabitReminderTime(habit.id!!)
 
     /**
+     * Get all records
+     */
+    fun getAllRecord(): Flow<List<Record>> = habitDao.getAllRecord()
+
+    /**
      * Get all records of a habit
      */
-    fun getAllHabitRecords(habit: Habit): LiveData<List<Record>> = habitDao.getAllRecord(habit.id!!)
+    fun getAllHabitRecords(habit: Habit): LiveData<List<Record>> =
+        habitDao.getAllRecordByHabitId(habit.id!!)
 
     /**
      * Set habit record completion status by isChecked value.

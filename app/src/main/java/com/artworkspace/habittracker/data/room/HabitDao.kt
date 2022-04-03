@@ -28,8 +28,11 @@ interface HabitDao {
     )
     fun getCompletedHabitRecord(timestamp: Long): Flow<List<HabitRecord>>
 
+    @Query("SELECT * FROM record ORDER BY timestamp DESC")
+    fun getAllRecord(): Flow<List<Record>>
+
     @Query("SELECT * FROM record WHERE habit_id = :habitId ORDER BY timestamp DESC")
-    fun getAllRecord(habitId: Long): LiveData<List<Record>>
+    fun getAllRecordByHabitId(habitId: Long): LiveData<List<Record>>
 
     @Query("SELECT COUNT(id) FROM record WHERE timestamp = :timestamp")
     suspend fun getCountRecordByTimestamp(timestamp: Long): Int
