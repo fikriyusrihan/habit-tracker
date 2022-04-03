@@ -66,12 +66,12 @@
                         app:layout_constraintTop_toBottomOf="@+id/tv_habit_title">
 
                         <TextView
-                            style="@style/Text"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/repeat"
                             android:textAllCaps="true"
-                            android:textSize="12sp" />
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tv_repeat_at"
@@ -96,10 +96,10 @@
                         app:layout_constraintTop_toBottomOf="@+id/tv_habit_title">
 
                         <TextView
-                            style="@style/Text"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/reminder"
+                            android:textStyle="bold"
                             android:textAllCaps="true"
                             android:textSize="12sp" />
 
@@ -151,8 +151,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
+            android:layout_marginTop="16dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
             android:layout_marginBottom="32dp">
 
             <androidx.cardview.widget.CardView
@@ -162,6 +162,7 @@
                 android:layout_marginHorizontal="18dp"
                 android:elevation="0dp"
                 app:cardCornerRadius="8dp"
+                android:visibility="invisible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -205,37 +206,28 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
-            <CalendarView
-                android:id="@+id/calendar_history"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="18dp"
-                android:layout_marginTop="18dp"
-                android:background="@drawable/card_progress_radius"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/card_streak" />
-
             <LinearLayout
-                android:id="@+id/linearLayout"
+                android:id="@+id/linearLayout7"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="18dp"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="16dp"
                 android:baselineAligned="false"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/calendar_history">
+                app:layout_constraintTop_toBottomOf="@+id/card_streak">
 
                 <LinearLayout
+                    android:id="@+id/card_completion_rate"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/card_progress_radius"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="18dp"
+                    android:visibility="invisible">
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -268,13 +260,15 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/card_total_completed"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/card_progress_radius"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="18dp"
+                    android:visibility="invisible">
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -283,25 +277,12 @@
                         android:src="@drawable/ic_baseline_check_24"
                         app:tint="#FF3C07" />
 
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tv_total_completed"
+                        style="@style/Text.Card.Number"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:layout_constraintStart_toStartOf="parent">
-
-                        <TextView
-                            android:id="@+id/tv_total_completed"
-                            style="@style/Text.Card.Number"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            tools:text="@string/dummy_4" />
-
-                        <TextView
-                            style="@style/Text.Card.Suffix"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/dummy_times" />
-
-                    </LinearLayout>
+                        tools:text="@string/dummy_4" />
 
                     <TextView
                         style="@style/Text.Card.Description"
@@ -311,6 +292,51 @@
                 </LinearLayout>
 
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/calendar_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="18dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_progress_radius"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="24dp"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/linearLayout7">
+
+                <TextView
+                    android:id="@+id/calendar_month_year"
+                    style="@style/Text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/april_2022"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+
+                <include
+                    android:id="@+id/legend_layout"
+                    layout="@layout/calendar_day_legend"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:layout_marginBottom="16dp" />
+
+                <com.kizitonwose.calendarview.CalendarView
+                    android:id="@+id/calendar_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cv_dayViewResource="@layout/calendar_day_layout"
+                    app:cv_inDateStyle="allMonths"
+                    app:cv_orientation="horizontal"
+                    app:cv_outDateStyle="endOfRow"
+                    app:cv_scrollMode="paged" />
+
+            </LinearLayout>
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

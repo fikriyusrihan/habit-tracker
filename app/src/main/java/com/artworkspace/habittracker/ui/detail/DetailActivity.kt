@@ -1,24 +1,37 @@
 package com.artworkspace.habittracker.ui.detail
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.children
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.Record
 import com.artworkspace.habittracker.data.entity.ReminderTime
 import com.artworkspace.habittracker.data.entity.WeeklyTarget
 import com.artworkspace.habittracker.databinding.ActivityDetailBinding
+import com.artworkspace.habittracker.databinding.CalendarDayLayoutBinding
 import com.artworkspace.habittracker.notification.NotificationReceiver
-import com.artworkspace.habittracker.utils.todayTimestamp
-import com.artworkspace.habittracker.utils.tomorrowTimestamp
+import com.artworkspace.habittracker.utils.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.kizitonwose.calendarview.model.CalendarDay
+import com.kizitonwose.calendarview.model.DayOwner
+import com.kizitonwose.calendarview.ui.DayBinder
+import com.kizitonwose.calendarview.ui.ViewContainer
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.YearMonth
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.*
 
 
@@ -30,6 +43,10 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var notificationReceiver: NotificationReceiver
 
     private val detailViewModel: DetailViewModel by viewModels()
+
+    private val selectedDates = mutableSetOf<LocalDate>()
+    private val today = LocalDate.now()
+    private val monthTitleFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +90,7 @@ class DetailActivity : AppCompatActivity() {
 
             getAllHabitRecord(habit).observe(observer) { records ->
                 countCurrentStreak(records)
+                parseCalendarHistory(records)
             }
         }
 
@@ -148,12 +166,109 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun parseTotalCompleted(totalCompleted: Int) {
-        binding.tvTotalCompleted.text = totalCompleted.toString()
+        binding.tvTotalCompleted.text =
+            getString(R.string.total_completed_placeholder, totalCompleted)
+        animateViewVisibility(true, binding.cardTotalCompleted)
     }
 
     private fun parseCompletionRate(completionRate: Int) {
         val string = "$completionRate %"
         binding.tvCompletionRate.text = string
+        animateViewVisibility(true, binding.cardCompletionRate)
+    }
+
+    private fun parseCalendarHistory(records: List<Record>) {
+
+        val checkedRecords = records.filter { it.isChecked }
+        checkedRecords.forEach { record ->
+            val calendar = Calendar.getInstance().also { it.timeInMillis = record.timestamp }
+            val localDate =
+                LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault()).toLocalDate()
+            selectedDates.add(localDate)
+        }
+
+        val firstDayInRecord =
+            Calendar.getInstance().also { it.timeInMillis = records.last().timestamp }
+        val lastDayInRecord =
+            Calendar.getInstance().also { it.timeInMillis = records.first().timestamp }
+
+        val daysOfWeek = daysOfWeekFromLocale()
+        val currentMonth = YearMonth.now()
+        val startMonth =
+            YearMonth.of(
+                firstDayInRecord.get(Calendar.YEAR),
+                firstDayInRecord.get(Calendar.MONTH) + 1
+            )
+        val endMonth =
+            YearMonth.of(
+                lastDayInRecord.get(Calendar.YEAR),
+                lastDayInRecord.get(Calendar.MONTH) + 1
+            )
+
+        binding.legendLayout.root.children.forEachIndexed { index, view ->
+            (view as TextView).apply {
+                text = daysOfWeek[index].getDisplayName(TextStyle.SHORT_STANDALONE, Locale.ENGLISH)
+                    .uppercase()
+            }
+        }
+        binding.calendarView.setup(startMonth, endMonth, daysOfWeek.first())
+        binding.calendarView.scrollToMonth(currentMonth)
+
+        class DayViewContainer(view: View) : ViewContainer(view) {
+            val textView = CalendarDayLayoutBinding.bind(view).calendarDayText
+        }
+
+        binding.calendarView.dayBinder = object : DayBinder<DayViewContainer> {
+            override fun create(view: View): DayViewContainer = DayViewContainer(view)
+
+            override fun bind(container: DayViewContainer, day: CalendarDay) {
+                container.textView.text = day.date.dayOfMonth.toString()
+                val textView = container.textView
+                textView.text = day.date.dayOfMonth.toString()
+                if (day.owner == DayOwner.THIS_MONTH) {
+                    when {
+                        selectedDates.contains(day.date) -> {
+                            textView.setTextColorRes(R.color.white)
+                            textView.setBackgroundResource(R.drawable.selected_date_background)
+                        }
+                        today == day.date -> {
+                            textView.setTextColorRes(R.color.white)
+                            textView.setBackgroundResource(R.drawable.icon_background_circle)
+                        }
+                        else -> {
+                            textView.background = null
+                        }
+                    }
+                } else {
+                    textView.setTextColor(Color.TRANSPARENT)
+                    textView.background = null
+                }
+            }
+        }
+
+        binding.calendarView.monthScrollListener = {
+            if (binding.calendarView.maxRowCount == 6) {
+                binding.calendarMonthYear.text = monthTitleFormatter.format(it.yearMonth)
+            } else {
+                // In week mode, we show the header a bit differently.
+                // We show indices with dates from different months since
+                // dates overflow and cells in one index can belong to different
+                // months/years.
+                val firstDate = it.weekDays.first().first().date
+                val lastDate = it.weekDays.last().last().date
+                if (firstDate.yearMonth == lastDate.yearMonth || firstDate.year == lastDate.year) {
+                    binding.calendarMonthYear.text = monthTitleFormatter.format(firstDate)
+                } else {
+                    val string = "${monthTitleFormatter.format(firstDate)} - ${
+                        monthTitleFormatter.format(lastDate)
+                    }"
+                    binding.calendarMonthYear.text = string
+
+                }
+            }
+        }
+
+        animateViewVisibility(true, binding.calendarContainer)
     }
 
     private fun deleteHabit(habit: Habit) {
@@ -182,6 +297,7 @@ class DetailActivity : AppCompatActivity() {
         }
 
         binding.tvCounterStreak.text = getString(R.string.streak_counter, streakCounter)
+        animateViewVisibility(true, binding.cardStreak)
     }
 
     companion object {

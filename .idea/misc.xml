@@ -15,12 +15,14 @@
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/icon_background_circle.xml" value="0.2225" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/icon_background_circle_dark.xml" value="0.2225" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/icon_background_circle_gray.xml" value="0.2225" />
+        <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/selected_date_background.xml" value="0.2225" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/splash_bg.xml" value="0.2225" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/drawable/splash_bg_night.xml" value="0.2225" />
-        <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/activity_detail.xml" value="0.38697916666666665" />
+        <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/activity_detail.xml" value="0.25" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/activity_new_habit.xml" value="0.33" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/calendar_day_layout.xml" value="0.38697916666666665" />
+        <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/calendar_day_legend.xml" value="0.38697916666666665" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/calendar_item.xml" value="0.38697916666666665" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/fragment_journal.xml" value="0.33" />
         <entry key="..\:/Code/Android/HabitTracker/app/src/main/res/layout/fragment_progress.xml" value="0.38697916666666665" />

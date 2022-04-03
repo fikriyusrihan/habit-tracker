@@ -41,7 +41,7 @@
     <string name="graph">Graph</string>
     <string name="bar_chart">Bar Chart</string>
     <string name="dummy_99_plus">99+</string>
-    <string name="_99_ndays">- \ndays</string>
+    <string name="_99_ndays">- days</string>
     <string name="add_habit">Add Habit</string>
     <string name="close">Close</string>
     <string name="save">Save</string>
@@ -85,11 +85,16 @@
     <string name="are_you_sure">Are you sure?</string>
     <string name="your_habit_will_be_deleted">Your habit will be deleted permanently</string>
     <string name="cancel">Cancel</string>
-    <string name="streak_counter">%d \ndays</string>
+    <string name="streak_counter">%d days</string>
     <string name="description">Description</string>
     <string name="reminder_notification_title">Don\'t lose your momentum🚀</string>
     <string name="reminder_notification_message">Let\'s build and track %s habit</string>
     <string name="habit_lowercase">habit</string>
     <string name="in_progress">In progress</string>
     <string name="double_placeholder">%.1f</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="started_habit_placeholder">%d habit</string>
+    <string name="total_completed_placeholder">%d times</string>
+    <string name="april_2022">April 2022</string>
 </resources>

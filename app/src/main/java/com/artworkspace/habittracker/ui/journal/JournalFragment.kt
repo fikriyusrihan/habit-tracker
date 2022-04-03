@@ -1,7 +1,5 @@
 package com.artworkspace.habittracker.ui.journal
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -24,7 +22,10 @@ import com.artworkspace.habittracker.databinding.FragmentJournalBinding
 import com.artworkspace.habittracker.ui.create.CreateHabitActivity
 import com.artworkspace.habittracker.ui.detail.DetailActivity
 import com.artworkspace.habittracker.ui.detail.DetailActivity.Companion.EXTRA_DETAIL
+import com.artworkspace.habittracker.utils.animateViewVisibility
 import com.artworkspace.habittracker.utils.todayTimestamp
+import com.artworkspace.habittracker.utils.tomorrowTimestamp
+import com.artworkspace.habittracker.utils.yesterdayTimestamp
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
@@ -90,36 +91,6 @@ class JournalFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    /**
-     * Animate view's visibility with crossfade effect
-     *
-     * @param isVisible visibility setting
-     * @param view view to apply the animation
-     */
-    private fun animateViewVisibility(isVisible: Boolean, view: View) {
-        if (isVisible) {
-            view.apply {
-                alpha = 0f
-                visibility = View.VISIBLE
-
-                animate()
-                    .alpha(1f)
-                    .setDuration(200L)
-                    .setListener(null)
-            }
-
-        } else {
-            view.animate()
-                .alpha(0f)
-                .setDuration(200L)
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
-                        view.visibility = View.GONE
-                    }
-                })
-        }
     }
 
     /**
@@ -306,26 +277,24 @@ class JournalFragment : Fragment() {
     /**
      * UI logic for setting date on the toolbar
      *
-     * @param timestamp selected timestmap
+     * @param timestamp selected timestamp
      */
     private fun setToolbarDate(timestamp: Long) {
         val sdf = SimpleDateFormat.getDateInstance()
 
-        if (timestamp != todayTimestamp) {
-            val date = Date(timestamp)
-            val txtDate = sdf.format(date)
-
-            binding.toolbarTitleSecondary.let { view ->
-                animateViewVisibility(false, view)
-                view.text = txtDate
-                animateViewVisibility(true, view)
+        binding.toolbarTitleSecondary.let { view ->
+            animateViewVisibility(false, view)
+            view.text = when (timestamp) {
+                todayTimestamp -> getString(R.string.today)
+                tomorrowTimestamp -> getString(R.string.tomorrow)
+                yesterdayTimestamp -> getString(R.string.yesterday)
+                else -> {
+                    val date = Date(timestamp)
+                    val txtDate = sdf.format(date)
+                    txtDate
+                }
             }
-        } else {
-            binding.toolbarTitleSecondary.let { view ->
-                animateViewVisibility(false, view)
-                view.text = getString(R.string.today)
-                animateViewVisibility(true, view)
-            }
+            animateViewVisibility(true, view)
         }
     }
 }

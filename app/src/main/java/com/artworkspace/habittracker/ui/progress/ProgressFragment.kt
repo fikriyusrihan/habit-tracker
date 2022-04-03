@@ -111,11 +111,11 @@ class ProgressFragment : Fragment() {
             if (record.isChecked) counter++
         }
 
-        binding.tvTotalCompleted.text = counter.toString()
+        binding.tvTotalCompleted.text = getString(R.string.total_completed_placeholder, counter)
     }
 
     private fun countStartedHabit(habits: List<Habit>) {
-        binding.tvStartedHabit.text = habits.size.toString()
+        binding.tvStartedHabit.text = getString(R.string.started_habit_placeholder, habits.size)
     }
 
     private fun countDailyAverage(records: List<Record>) {
