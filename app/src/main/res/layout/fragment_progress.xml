@@ -73,13 +73,13 @@
             android:id="@+id/card_streak"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="invisible"
             android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="16dp"
             android:elevation="0dp"
+            android:visibility="invisible"
             app:cardCornerRadius="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -125,8 +125,8 @@
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="16dp"
             android:baselineAligned="false"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
@@ -140,9 +140,9 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/card_progress_radius"
-                android:visibility="invisible"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="18dp"
+                android:visibility="invisible">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -171,11 +171,11 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="8dp"
-                android:visibility="invisible"
                 android:layout_weight="1"
                 android:background="@drawable/card_progress_radius"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="18dp"
+                android:visibility="invisible">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -217,12 +217,12 @@
                 android:id="@+id/card_completion_rate"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:visibility="invisible"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/card_progress_radius"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="18dp"
+                android:visibility="invisible">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -260,10 +260,10 @@
                 android:layout_height="match_parent"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:visibility="invisible"
                 android:background="@drawable/card_progress_radius"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="18dp"
+                android:visibility="invisible">
 
                 <ImageView
                     android:layout_width="wrap_content"

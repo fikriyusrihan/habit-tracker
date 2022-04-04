@@ -41,8 +41,20 @@ class HabitRepository @Inject constructor(
     /**
      * Get all reminder time for a habit
      */
-    fun getReminderTime(habit: Habit): LiveData<ReminderTime> =
-        habitDao.getHabitReminderTime(habit.id!!)
+    fun getReminderTimeLiveData(habit: Habit): LiveData<ReminderTime> =
+        habitDao.getHabitReminderTimeLiveData(habit.id!!)
+
+    suspend fun getReminderTime(habit: Habit): ReminderTime = habitDao.getHabitReminder(habit.id!!)
+
+    suspend fun updateHabitData(
+        habit: Habit,
+        weeklyTarget: WeeklyTarget,
+        reminderTime: ReminderTime
+    ) {
+        habitDao.updateHabit(habit)
+        habitDao.updateReminderTime(reminderTime)
+        habitDao.updateWeeklyTarget(weeklyTarget)
+    }
 
     /**
      * Get all records

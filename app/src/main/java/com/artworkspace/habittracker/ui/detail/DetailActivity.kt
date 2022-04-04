@@ -1,12 +1,12 @@
 package com.artworkspace.habittracker.ui.detail
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
@@ -18,6 +18,8 @@ import com.artworkspace.habittracker.data.entity.WeeklyTarget
 import com.artworkspace.habittracker.databinding.ActivityDetailBinding
 import com.artworkspace.habittracker.databinding.CalendarDayLayoutBinding
 import com.artworkspace.habittracker.notification.NotificationReceiver
+import com.artworkspace.habittracker.ui.edit.EditActivity
+import com.artworkspace.habittracker.ui.edit.EditActivity.Companion.EXTRA_EDIT
 import com.artworkspace.habittracker.utils.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.kizitonwose.calendarview.model.CalendarDay
@@ -112,7 +114,10 @@ class DetailActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.menu_edit -> {
-            Toast.makeText(this, "Edit", Toast.LENGTH_SHORT).show()
+            Intent(this, EditActivity::class.java).also { intent ->
+                intent.putExtra(EXTRA_EDIT, habit)
+                startActivity(intent)
+            }
             true
         }
         R.id.menu_delete -> {

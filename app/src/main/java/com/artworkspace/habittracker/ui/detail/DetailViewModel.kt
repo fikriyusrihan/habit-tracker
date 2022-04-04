@@ -28,7 +28,7 @@ class DetailViewModel @Inject constructor(
     val totalCompleted: LiveData<Int> = _totalCompleted
 
     fun getReminderTime(habit: Habit): LiveData<ReminderTime> =
-        habitRepository.getReminderTime(habit)
+        habitRepository.getReminderTimeLiveData(habit)
 
     fun getAllHabitRecord(habit: Habit): LiveData<List<Record>> =
         habitRepository.getAllHabitRecords(habit)

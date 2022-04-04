@@ -53,7 +53,10 @@ interface HabitDao {
     suspend fun getHabitWeeklyTarget(id: Long): WeeklyTarget
 
     @Query("SELECT * FROM remindertime WHERE habit_id = :id")
-    fun getHabitReminderTime(id: Long): LiveData<ReminderTime>
+    fun getHabitReminderTimeLiveData(id: Long): LiveData<ReminderTime>
+
+    @Query("SELECT * FROM remindertime WHERE habit_id = :id")
+    suspend fun getHabitReminder(id: Long): ReminderTime
 
     @Query("DELETE FROM record WHERE habit_id = :habitId")
     suspend fun deleteAllRecordsByHabitId(habitId: Long)
@@ -69,6 +72,15 @@ interface HabitDao {
 
     @Update
     suspend fun updateRecord(record: Record)
+
+    @Update
+    suspend fun updateHabit(habit: Habit)
+
+    @Update
+    suspend fun updateWeeklyTarget(weeklyTarget: WeeklyTarget)
+
+    @Update
+    suspend fun updateReminderTime(reminderTime: ReminderTime)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertReminderTime(reminderTime: ReminderTime)

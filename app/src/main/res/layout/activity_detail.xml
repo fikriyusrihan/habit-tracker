@@ -99,9 +99,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/reminder"
-                            android:textStyle="bold"
                             android:textAllCaps="true"
-                            android:textSize="12sp" />
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tv_reminder_at"
@@ -151,8 +151,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_marginTop="16dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="32dp">
 
             <androidx.cardview.widget.CardView
@@ -161,8 +161,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="18dp"
                 android:elevation="0dp"
-                app:cardCornerRadius="8dp"
                 android:visibility="invisible"
+                app:cardCornerRadius="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">

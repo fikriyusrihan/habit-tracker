@@ -12,6 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.HabitTracker">
+        <activity
+            android:name=".ui.edit.EditActivity"
+            android:exported="false" />
+
         <receiver
             android:name=".notification.NotificationReceiver"
             android:enabled="true"

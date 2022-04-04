@@ -1,4 +1,4 @@
-package com.artworkspace.habittracker.ui.create
+package com.artworkspace.habittracker.ui.edit
 
 import android.content.Context
 import android.os.Bundle
@@ -10,7 +10,7 @@ import com.artworkspace.habittracker.BaseApplication
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.ReminderTime
-import com.artworkspace.habittracker.databinding.ActivityNewHabitBinding
+import com.artworkspace.habittracker.databinding.ActivityEditBinding
 import com.artworkspace.habittracker.notification.NotificationReceiver
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -26,67 +26,65 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @AndroidEntryPoint
-class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
+class EditActivity : AppCompatActivity(), IconDialog.Callback {
 
-    private lateinit var binding: ActivityNewHabitBinding
+    private lateinit var binding: ActivityEditBinding
+    private lateinit var habit: Habit
     private lateinit var notificationReceiver: NotificationReceiver
 
-    private var startAtState: Long? = null
+    private var checkedDaysState: BooleanArray = booleanArrayOf()
     private var reminderState: ReminderTime? = null
-    private var checkedDaysState: BooleanArray? = null
-    private var iconState: Icon? = null
+    private var startAtState: Long? = null
+    private var iconState: Int? = null
 
-    private val viewModel: CreateHabitViewModel by viewModels()
+    private val viewModel: EditViewModel by viewModels()
     private val days =
         arrayOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityNewHabitBinding.inflate(layoutInflater)
+        binding = ActivityEditBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        habit = intent.getParcelableExtra(EXTRA_EDIT)!!
         notificationReceiver = NotificationReceiver()
 
-        if (savedInstanceState != null) {
-            binding.tvRepeatStatus.text = savedInstanceState.getString(REPEAT_STATUS)
-        }
-
         viewModel.apply {
-            val observer = this@CreateHabitActivity
-
-            startAtTimestamp.observe(observer) { timeInMillis ->
-                startAtState = timeInMillis
-                setDefaultStartAt(timeInMillis)
+            val owner = this@EditActivity
+            habitTitleState.observe(owner) { name ->
+                setHabitNameText(name)
             }
-
-            reminder.observe(observer) { time ->
-                reminderState = time
-                setDefaultReminder(time)
+            habitDescriptionState.observe(owner) { description ->
+                setHabitDescriptionText(description)
             }
-
-            checkedDays.observe(observer) { checkedDays ->
+            habitIconState.observe(owner) { icon ->
+                setHabitIconDrawable(icon)
+                iconState = icon
+            }
+            habitStartState.observe(owner) { timestamp ->
+                setHabitStartAtText(timestamp)
+                startAtState = timestamp
+            }
+            habitReminderState.observe(owner) { reminderTime ->
+                setHabitReminderText(reminderTime)
+                reminderState = reminderTime
+            }
+            habitCheckedDaysState.observe(owner) { checkedDays ->
+                setHabitRepeatText(checkedDays)
                 checkedDaysState = checkedDays
             }
 
-            icon.observe(observer) { icon ->
-                iconState = icon
-                binding.btnSelectIcon.setImageDrawable(icon?.drawable)
-            }
+            initializeData(habit)
         }
 
         binding.apply {
             btnExit.setOnClickListener { finish() }
-            btnSave.setOnClickListener { saveNewHabit() }
-            btnSelectIcon.setOnClickListener { selectHabitIcon() }
-            repeatStatus.setOnClickListener { showRepeatDialog(this@CreateHabitActivity) }
-            reminder.setOnClickListener { showTimePicker() }
-            startFromStatus.setOnClickListener { setStartDate() }
+            btnSave.setOnClickListener { saveHabit() }
+            btnSelectIcon.setOnClickListener { showHabitIconSelector() }
+            repeatStatus.setOnClickListener { showSelectCheckedDaysDialog(this@EditActivity) }
+            reminderStatus.setOnClickListener { showTimePicker() }
+            startFromStatus.setOnClickListener { showStartDatePicker() }
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(REPEAT_STATUS, binding.tvRepeatStatus.text.toString())
-        super.onSaveInstanceState(outState)
     }
 
     override val iconDialogIconPack: IconPack?
@@ -94,14 +92,46 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
 
     override fun onIconDialogIconsSelected(dialog: IconDialog, icons: List<Icon>) {
         val icon = icons.first()
-        binding.btnSelectIcon.setImageDrawable(icon.drawable)
-        viewModel.setIcon(icon)
+        viewModel.setIconState(icon.id)
+    }
+
+    private fun setHabitIconDrawable(id: Int?) {
+        if (id != null) {
+            binding.btnSelectIcon.setImageDrawable(iconDialogIconPack?.getIcon(id)?.drawable)
+        }
+    }
+
+    private fun setHabitNameText(name: String) {
+        binding.etHabitTitle.setText(name)
+    }
+
+    private fun setHabitDescriptionText(description: String) {
+        binding.etHabitDescription.setText(description)
+    }
+
+    private fun setHabitRepeatText(checkedDays: BooleanArray) {
+        var string = ""
+        var isEveryday = true
+        checkedDays.forEachIndexed { index, b ->
+            if (b) {
+                string += if (string.isNotBlank()) {
+                    ", ${days[index]}"
+                } else {
+                    days[index]
+                }
+            } else {
+                isEveryday = false
+            }
+        }
+
+        if (isEveryday) binding.tvRepeatStatus.text = getString(R.string.repeat_everyday)
+        else binding.tvRepeatStatus.text = getString(R.string.repeat_every, string)
     }
 
     /**
      * Show dialog icon picker for the habit
      */
-    private fun selectHabitIcon() {
+    private fun showHabitIconSelector() {
         val iconDialog = supportFragmentManager.findFragmentByTag(ICON_DIALOG_TAG) as IconDialog?
             ?: IconDialog.newInstance(IconDialogSettings())
 
@@ -111,7 +141,7 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
     /**
      * Set the start from text view
      */
-    private fun setDefaultStartAt(timeInMillis: Long) {
+    private fun setHabitStartAtText(timeInMillis: Long) {
         val todayStart = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
         }
@@ -133,7 +163,7 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
     /**
      * Set default reminder for every new habit
      */
-    private fun setDefaultReminder(time: ReminderTime) {
+    private fun setHabitReminderText(time: ReminderTime) {
         val sdf = SimpleDateFormat("h:mm a", Locale.ENGLISH)
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, time.hour)
@@ -142,6 +172,22 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
 
         binding.tvReminderStatus.text =
             getString(R.string.remind_me_at, sdf.format(calendar.time))
+    }
+
+    /**
+     * Show daily repeat dialog
+     */
+    private fun showSelectCheckedDaysDialog(ctx: Context) {
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(getString(R.string.repeat_this_habit_every))
+            .setPositiveButton(getString(R.string.save)) { _, _ ->
+                viewModel.setCheckedDaysState(checkedDaysState)
+            }
+            .setMultiChoiceItems(days, checkedDaysState) { _, which, checked ->
+                checkedDaysState[which] = checked
+            }
+            .setCancelable(false)
+            .show()
     }
 
     /**
@@ -156,8 +202,14 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
             .build()
             .apply {
                 addOnPositiveButtonClickListener {
-                    val reminderTime = ReminderTime(hour = this.hour, minute = this.minute)
-                    viewModel.setReminderTime(reminderTime)
+                    ReminderTime(
+                        id = reminderState?.id,
+                        habitId = habit.id!!,
+                        hour = this.hour,
+                        minute = this.minute
+                    ).also {
+                        viewModel.setReminderTimeState(it)
+                    }
                 }
                 show(supportFragmentManager, TIME_PICKER_TAG)
             }
@@ -166,7 +218,7 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
     /**
      * Show and set the date picker for start date field
      */
-    private fun setStartDate() {
+    private fun showStartDatePicker() {
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(getString(R.string.select_date))
             .setSelection(startAtState)
@@ -174,68 +226,32 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
 
         datePicker.show(supportFragmentManager, DATE_PICKER_TAG)
         datePicker.addOnPositiveButtonClickListener {
-            viewModel.setStartAtTimestamp(it)
+            viewModel.setStartAtState(it)
         }
     }
 
-    /**
-     * Show daily repeat dialog
-     */
-    private fun showRepeatDialog(ctx: Context) {
-        MaterialAlertDialogBuilder(ctx)
-            .setTitle(getString(R.string.repeat_this_habit_every))
-            .setPositiveButton(getString(R.string.save)) { _, _ ->
-                var string = ""
-                var isEveryday = true
-                checkedDaysState?.forEachIndexed { index, b ->
-                    if (b) {
-                        string += if (string.isNotBlank()) {
-                            ", ${days[index]}"
-                        } else {
-                            days[index]
-                        }
-                    } else {
-                        isEveryday = false
-                    }
-                }
-
-                if (isEveryday) binding.tvRepeatStatus.text = getString(R.string.repeat_everyday)
-                else binding.tvRepeatStatus.text = getString(R.string.repeat_every, string)
-
-                viewModel.setCheckedDays(checkedDaysState)
-            }
-            .setMultiChoiceItems(days, checkedDaysState) { _, which, checked ->
-                checkedDaysState?.set(which, checked)
-            }
-            .setCancelable(false)
-            .show()
-    }
-
-    /**
-     * Save and store the new habit to the database
-     */
-    private fun saveNewHabit() {
+    private fun saveHabit() {
         val name = binding.etHabitTitle.text.toString()
         val description = binding.etHabitDescription.text.toString()
-        val icon = iconState?.id
+        val icon = iconState
         val startAt = startAtState!!
 
         if (name.isBlank()) {
             binding.etHabitTitle.error = getString(R.string.please_fill_this_field)
         } else {
-            val habit = Habit(
-                id = null,
+            val newHabit = Habit(
+                id = habit.id,
                 name = name,
                 icon = icon,
                 description = description,
                 startAt = startAt,
-                createdAt = Calendar.getInstance().timeInMillis
+                createdAt = habit.createdAt
             )
 
             lifecycleScope.launch {
-                val habitId = viewModel.saveNewHabit(
-                    habit = habit,
-                    weeklyTargetArray = checkedDaysState,
+                viewModel.saveHabit(
+                    habit = newHabit,
+                    checkedDays = checkedDaysState,
                     reminderTime = reminderState!!
                 )
 
@@ -247,34 +263,26 @@ class CreateHabitActivity : AppCompatActivity(), IconDialog.Callback {
                     set(Calendar.MILLISECOND, 0)
                 }
 
-                val storedHabit = Habit(
-                    id = habitId,
-                    name = name,
-                    icon = icon,
-                    description = description,
-                    startAt = startAt,
-                    createdAt = Calendar.getInstance().timeInMillis
+                notificationReceiver.cancelAlarm(
+                    this@EditActivity, newHabit
                 )
 
                 notificationReceiver.setReminderNotification(
-                    this@CreateHabitActivity,
-                    storedHabit,
+                    this@EditActivity,
+                    newHabit,
                     calendar.timeInMillis
                 )
             }
 
-            Toast.makeText(this, getString(R.string.habit_information_updated), Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(this, getString(R.string.new_habit_created), Toast.LENGTH_SHORT).show()
             finish()
         }
     }
 
     companion object {
-        private const val REPEAT_STATUS = "RepeatStatus"
+        const val EXTRA_EDIT = "extra_edit"
         private const val ICON_DIALOG_TAG = "IconDialog"
         private const val TIME_PICKER_TAG = "TimePicker"
         private const val DATE_PICKER_TAG = "DatePicker"
     }
-
-
 }
