@@ -1,24 +1,38 @@
 package com.artworkspace.habittracker.ui.progress
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.Record
+import com.artworkspace.habittracker.databinding.CalendarDayLayoutBinding
 import com.artworkspace.habittracker.databinding.FragmentProgressBinding
-import com.artworkspace.habittracker.utils.todayTimestamp
-import com.artworkspace.habittracker.utils.tomorrowTimestamp
+import com.artworkspace.habittracker.utils.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.kizitonwose.calendarview.model.CalendarDay
+import com.kizitonwose.calendarview.model.DayOwner
+import com.kizitonwose.calendarview.ui.DayBinder
+import com.kizitonwose.calendarview.ui.ViewContainer
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.YearMonth
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.*
 
 @AndroidEntryPoint
 class ProgressFragment : Fragment() {
@@ -27,6 +41,11 @@ class ProgressFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val progressViewModel by viewModels<ProgressViewModel>()
+
+    private val selectedDates = mutableSetOf<LocalDate>()
+    private val partialSelectedDates = mutableSetOf<LocalDate>()
+    private val today = LocalDate.now()
+    private val monthTitleFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,6 +66,7 @@ class ProgressFragment : Fragment() {
                     countTotalHabitCompleted(records)
                     countDailyAverage(records)
                     countCompletionRate(records)
+                    parseCalendarHistory(records)
                 }
             }
 
@@ -103,6 +123,7 @@ class ProgressFragment : Fragment() {
         }
 
         binding.tvCounterStreak.text = getString(R.string.streak_counter, streakCounter)
+        animateViewVisibility(true, binding.cardStreak)
     }
 
     private fun countTotalHabitCompleted(records: List<Record>) {
@@ -112,10 +133,12 @@ class ProgressFragment : Fragment() {
         }
 
         binding.tvTotalCompleted.text = getString(R.string.total_completed_placeholder, counter)
+        animateViewVisibility(true, binding.cardTotalHabitCompleted)
     }
 
     private fun countStartedHabit(habits: List<Habit>) {
         binding.tvStartedHabit.text = getString(R.string.started_habit_placeholder, habits.size)
+        animateViewVisibility(true, binding.cardHabitInProgress)
     }
 
     private fun countDailyAverage(records: List<Record>) {
@@ -145,6 +168,7 @@ class ProgressFragment : Fragment() {
 
         val avg = completedHabitCounter.toDouble() / daysCounter
         binding.tvAvgDaily.text = getString(R.string.double_placeholder, avg)
+        animateViewVisibility(true, binding.cardDailyAverage)
     }
 
     private fun countCompletionRate(records: List<Record>) {
@@ -155,5 +179,112 @@ class ProgressFragment : Fragment() {
         val string = "$completionRate %"
 
         binding.tvCompletionRate.text = string
+        animateViewVisibility(true, binding.cardCompletionRate)
+    }
+
+    private fun parseCalendarHistory(records: List<Record>) {
+
+        val checkedRecords = records.filter { it.isChecked }
+        checkedRecords.forEach { record ->
+            val calendar = Calendar.getInstance().also { it.timeInMillis = record.timestamp }
+            val localDate =
+                LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault()).toLocalDate()
+            selectedDates.add(localDate)
+        }
+
+        val uncheckedRecords = records.filter { !it.isChecked }
+        uncheckedRecords.forEach { record ->
+            val calendar = Calendar.getInstance().also { it.timeInMillis = record.timestamp }
+            val localDate =
+                LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault()).toLocalDate()
+
+            if (selectedDates.contains(localDate)) {
+                selectedDates.remove(localDate)
+                partialSelectedDates.add(localDate)
+            }
+        }
+
+        val firstDayInRecord =
+            Calendar.getInstance().also { it.timeInMillis = records.last().timestamp }
+        val lastDayInRecord =
+            Calendar.getInstance().also { it.timeInMillis = records.first().timestamp }
+
+        val daysOfWeek = daysOfWeekFromLocale()
+        val currentMonth = YearMonth.now()
+        val startMonth =
+            YearMonth.of(
+                firstDayInRecord.get(Calendar.YEAR),
+                firstDayInRecord.get(Calendar.MONTH) + 1
+            )
+        val endMonth =
+            YearMonth.of(
+                lastDayInRecord.get(Calendar.YEAR),
+                lastDayInRecord.get(Calendar.MONTH) + 1
+            )
+
+        binding.legendLayout.root.children.forEachIndexed { index, view ->
+            (view as TextView).apply {
+                text = daysOfWeek[index].getDisplayName(TextStyle.SHORT_STANDALONE, Locale.ENGLISH)
+                    .uppercase()
+            }
+        }
+        binding.calendarView.setup(startMonth, endMonth, daysOfWeek.first())
+        binding.calendarView.scrollToMonth(currentMonth)
+
+        class DayViewContainer(view: View) : ViewContainer(view) {
+            val textView = CalendarDayLayoutBinding.bind(view).calendarDayText
+        }
+
+        binding.calendarView.dayBinder = object : DayBinder<DayViewContainer> {
+            override fun create(view: View): DayViewContainer = DayViewContainer(view)
+
+            override fun bind(container: DayViewContainer, day: CalendarDay) {
+                container.textView.text = day.date.dayOfMonth.toString()
+                val textView = container.textView
+                textView.text = day.date.dayOfMonth.toString()
+                if (day.owner == DayOwner.THIS_MONTH) {
+                    when {
+                        selectedDates.contains(day.date) -> {
+                            textView.setTextColorRes(R.color.white)
+                            textView.setBackgroundResource(R.drawable.selected_date_background)
+                        }
+                        partialSelectedDates.contains(day.date) -> {
+                            textView.setTextColorRes(R.color.white)
+                            textView.setBackgroundResource(R.drawable.selected_date_border)
+                        }
+                        today == day.date -> {
+                            textView.setTextColorRes(R.color.white)
+                            textView.setBackgroundResource(R.drawable.icon_background_circle)
+                        }
+                        else -> {
+                            textView.background = null
+                        }
+                    }
+                } else {
+                    textView.setTextColor(Color.TRANSPARENT)
+                    textView.background = null
+                }
+            }
+        }
+
+        binding.calendarView.monthScrollListener = {
+            if (binding.calendarView.maxRowCount == 6) {
+                binding.calendarMonthYear.text = monthTitleFormatter.format(it.yearMonth)
+            } else {
+                val firstDate = it.weekDays.first().first().date
+                val lastDate = it.weekDays.last().last().date
+                if (firstDate.yearMonth == lastDate.yearMonth || firstDate.year == lastDate.year) {
+                    binding.calendarMonthYear.text = monthTitleFormatter.format(firstDate)
+                } else {
+                    val string = "${monthTitleFormatter.format(firstDate)} - ${
+                        monthTitleFormatter.format(lastDate)
+                    }"
+                    binding.calendarMonthYear.text = string
+
+                }
+            }
+        }
+
+        animateViewVisibility(true, binding.calendarContainer)
     }
 }

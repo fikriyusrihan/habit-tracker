@@ -187,10 +187,15 @@ class DetailActivity : AppCompatActivity() {
             selectedDates.add(localDate)
         }
 
-        val firstDayInRecord =
-            Calendar.getInstance().also { it.timeInMillis = records.last().timestamp }
-        val lastDayInRecord =
-            Calendar.getInstance().also { it.timeInMillis = records.first().timestamp }
+        val firstDayInRecord = Calendar.getInstance()
+        val lastDayInRecord = Calendar.getInstance()
+
+        try {
+            firstDayInRecord.timeInMillis = records.last().timestamp
+            lastDayInRecord.timeInMillis = records.first().timestamp
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         val daysOfWeek = daysOfWeekFromLocale()
         val currentMonth = YearMonth.now()
@@ -250,10 +255,6 @@ class DetailActivity : AppCompatActivity() {
             if (binding.calendarView.maxRowCount == 6) {
                 binding.calendarMonthYear.text = monthTitleFormatter.format(it.yearMonth)
             } else {
-                // In week mode, we show the header a bit differently.
-                // We show indices with dates from different months since
-                // dates overflow and cells in one index can belong to different
-                // months/years.
                 val firstDate = it.weekDays.first().first().date
                 val lastDate = it.weekDays.last().last().date
                 if (firstDate.yearMonth == lastDate.yearMonth || firstDate.year == lastDate.year) {

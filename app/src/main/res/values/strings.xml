@@ -97,4 +97,6 @@
     <string name="started_habit_placeholder">%d habit</string>
     <string name="total_completed_placeholder">%d times</string>
     <string name="april_2022">April 2022</string>
+    <string name="some_complete">Some complete</string>
+    <string name="all_complete">All complete</string>
 </resources>
