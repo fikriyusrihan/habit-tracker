@@ -13,4 +13,42 @@
         <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="SplashTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
+        <item name="android:windowBackground">@drawable/splash_bg_night</item>
+    </style>
+
+    <style name="CustomChipStyle" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="AppBarLayout">
+        <item name="android:background">@color/black_200</item>
+    </style>
+
+    <style name="BottomNavigation">
+        <item name="android:background">@color/black_200</item>
+        <item name="itemIconTint">@drawable/bottom_nav_icon_color_night</item>
+        <item name="itemTextColor">@drawable/bottom_nav_icon_color_night</item>
+    </style>
+
+    <style name="Text">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="Text.ToolbarTitlePrimary">
+        <item name="android:fontFamily">@font/product_sans_bold</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="Layout">
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+    </style>
 </resources>
