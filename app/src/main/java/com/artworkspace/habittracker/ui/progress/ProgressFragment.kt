@@ -240,9 +240,15 @@ class ProgressFragment : Fragment() {
         }
 
         val firstDayInRecord =
-            Calendar.getInstance().also { it.timeInMillis = records.last().timestamp }
+            Calendar.getInstance().also {
+                it.timeInMillis =
+                    if (records.isNotEmpty()) records.last().timestamp else todayTimestamp
+            }
         val lastDayInRecord =
-            Calendar.getInstance().also { it.timeInMillis = records.first().timestamp }
+            Calendar.getInstance().also {
+                it.timeInMillis =
+                    if (records.isNotEmpty()) records.first().timestamp else todayTimestamp
+            }
 
         val daysOfWeek = daysOfWeekFromLocale()
         val currentMonth = YearMonth.now()
