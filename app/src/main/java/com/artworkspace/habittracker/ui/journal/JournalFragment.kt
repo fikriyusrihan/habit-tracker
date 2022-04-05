@@ -22,7 +22,7 @@ import com.artworkspace.habittracker.databinding.FragmentJournalBinding
 import com.artworkspace.habittracker.ui.create.CreateHabitActivity
 import com.artworkspace.habittracker.ui.detail.DetailActivity
 import com.artworkspace.habittracker.ui.detail.DetailActivity.Companion.EXTRA_DETAIL
-import com.artworkspace.habittracker.utils.animateViewVisibility
+import com.artworkspace.habittracker.utils.animateVisibility
 import com.artworkspace.habittracker.utils.todayTimestamp
 import com.artworkspace.habittracker.utils.tomorrowTimestamp
 import com.artworkspace.habittracker.utils.yesterdayTimestamp
@@ -110,8 +110,8 @@ class JournalFragment : Fragment() {
                     listUncompletedHabit.submitList(habits)
                     counterTodayHabit += habits.size
 
-                    animateViewVisibility(counterTodayHabit == 0, binding.tvHabitMessage)
-                    animateViewVisibility(habits.isNotEmpty(), binding.rvHabitNotCompleted)
+                    binding.rvHabitNotCompleted.animateVisibility(habits.isNotEmpty())
+                    binding.tvHabitMessage.animateVisibility(counterTodayHabit == 0)
                 }
             }
 
@@ -121,12 +121,12 @@ class JournalFragment : Fragment() {
                     counterTodayHabit += habits.size
 
                     habits.isNotEmpty().let { visibility ->
-                        animateViewVisibility(visibility, binding.tvCountCompleted)
-                        animateViewVisibility(visibility, binding.rvHabitCompleted)
-                        animateViewVisibility(visibility, binding.dividerTop)
+                        binding.tvCountCompleted.animateVisibility(visibility)
+                        binding.rvHabitCompleted.animateVisibility(visibility)
+                        binding.dividerTop.animateVisibility(visibility)
                     }
 
-                    animateViewVisibility(counterTodayHabit == 0, binding.tvHabitMessage)
+                    binding.tvHabitMessage.animateVisibility(counterTodayHabit == 0)
                 }
             }
         }
@@ -283,7 +283,7 @@ class JournalFragment : Fragment() {
         val sdf = SimpleDateFormat.getDateInstance()
 
         binding.toolbarTitleSecondary.let { view ->
-            animateViewVisibility(false, view)
+            view.animateVisibility(false)
             view.text = when (timestamp) {
                 todayTimestamp -> getString(R.string.today)
                 tomorrowTimestamp -> getString(R.string.tomorrow)
@@ -294,7 +294,7 @@ class JournalFragment : Fragment() {
                     txtDate
                 }
             }
-            animateViewVisibility(true, view)
+            view.animateVisibility(true)
         }
     }
 }

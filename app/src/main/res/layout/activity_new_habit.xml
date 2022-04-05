@@ -7,7 +7,7 @@
     tools:context=".ui.create.CreateHabitActivity">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayout2"
+        android:id="@+id/appBarLayout"
         style="@style/AppBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -53,7 +53,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
-        android:id="@+id/habit_title"
+        android:id="@+id/card_habit_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="18dp"
@@ -62,7 +62,7 @@
         android:paddingVertical="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appBarLayout2">
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
         <ImageView
             android:id="@+id/btn_select_icon"
@@ -88,14 +88,14 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/description"
+        android:id="@+id/card_habit_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/habit_title">
+        app:layout_constraintTop_toBottomOf="@+id/card_habit_title">
 
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
@@ -139,7 +139,7 @@
 
 
     <LinearLayout
-        android:id="@+id/repeat_status"
+        android:id="@+id/card_weekly_target_status"
         style="@style/Layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -149,7 +149,7 @@
         android:paddingEnd="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/description">
+        app:layout_constraintTop_toBottomOf="@+id/card_habit_description">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -186,7 +186,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/reminder"
+        android:id="@+id/card_reminder_time_status"
         style="@style/Layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -196,7 +196,7 @@
         android:paddingEnd="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/repeat_status">
+        app:layout_constraintTop_toBottomOf="@+id/card_weekly_target_status">
 
 
         <LinearLayout
@@ -234,7 +234,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/start_from_status"
+        android:id="@+id/card_start_at_status"
         style="@style/Layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -244,7 +244,7 @@
         android:paddingEnd="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reminder">
+        app:layout_constraintTop_toBottomOf="@+id/card_reminder_time_status">
 
 
         <LinearLayout

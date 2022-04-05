@@ -95,20 +95,40 @@ class EditActivity : AppCompatActivity(), IconDialog.Callback {
         viewModel.setIconState(icon.id)
     }
 
+    /**
+     * Set and parse icon information to its related imageview
+     *
+     * @param id Icon id
+     */
     private fun setHabitIconDrawable(id: Int?) {
         if (id != null) {
             binding.btnSelectIcon.setImageDrawable(iconDialogIconPack?.getIcon(id)?.drawable)
         }
     }
 
+    /**
+     * Set and parse data of habit's name to its related textview
+     *
+     * @param name Information to parse, Habit's name
+     */
     private fun setHabitNameText(name: String) {
         binding.etHabitTitle.setText(name)
     }
 
+    /**
+     * Set and parse data of habit's description to its related textview
+     *
+     * @param description Information to parse
+     */
     private fun setHabitDescriptionText(description: String) {
         binding.etHabitDescription.setText(description)
     }
 
+    /**
+     * Set and parse data of checked days to its related textview
+     *
+     * @param checkedDays Information to parse
+     */
     private fun setHabitRepeatText(checkedDays: BooleanArray) {
         var string = ""
         var isEveryday = true
@@ -230,6 +250,9 @@ class EditActivity : AppCompatActivity(), IconDialog.Callback {
         }
     }
 
+    /**
+     * Save habit that contain new information
+     */
     private fun saveHabit() {
         val name = binding.etHabitTitle.text.toString()
         val description = binding.etHabitDescription.text.toString()
@@ -255,6 +278,8 @@ class EditActivity : AppCompatActivity(), IconDialog.Callback {
                     reminderTime = reminderState!!
                 )
 
+                viewModel.deleteHabitRecordBeforeTimestamp(newHabit, startAt)
+
                 val calendar = Calendar.getInstance()
                 calendar.apply {
                     set(Calendar.HOUR_OF_DAY, reminderState?.hour ?: 9)
@@ -274,7 +299,8 @@ class EditActivity : AppCompatActivity(), IconDialog.Callback {
                 )
             }
 
-            Toast.makeText(this, getString(R.string.new_habit_created), Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.habit_information_updated), Toast.LENGTH_SHORT)
+                .show()
             finish()
         }
     }

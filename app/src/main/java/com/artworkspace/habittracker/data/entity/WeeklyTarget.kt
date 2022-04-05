@@ -6,8 +6,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
-@Entity
 @Parcelize
+@Entity(tableName = "weekly_target")
 data class WeeklyTarget(
     @PrimaryKey(autoGenerate = true)
     val id: Long?,

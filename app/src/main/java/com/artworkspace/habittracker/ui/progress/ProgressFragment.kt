@@ -95,8 +95,13 @@ class ProgressFragment : Fragment() {
         _binding = null
     }
 
-    private fun showProgressInformation(ctx: Context) {
-        MaterialAlertDialogBuilder(ctx)
+    /**
+     * Show information dialog of this fragment
+     *
+     * @param context Context
+     */
+    private fun showProgressInformation(context: Context) {
+        MaterialAlertDialogBuilder(context)
             .setTitle(getString(R.string.progress_information_title))
             .setMessage(getString(R.string.progress_information_message))
             .setPositiveButton(getString(R.string.progress_information_ok)) { dialog, _ ->
@@ -105,6 +110,11 @@ class ProgressFragment : Fragment() {
             .show()
     }
 
+    /**
+     * Count current streak from all habits
+     *
+     * @param records All records
+     */
     private fun countCurrentStreak(records: List<Record>) {
         var streakCounter = 0
         var lastTimestamp = 0L
@@ -123,9 +133,14 @@ class ProgressFragment : Fragment() {
         }
 
         binding.tvCounterStreak.text = getString(R.string.streak_counter, streakCounter)
-        animateViewVisibility(true, binding.cardStreak)
+        binding.cardStreak.animateVisibility(true)
     }
 
+    /**
+     * Count total habit that already completed and parse the data to related views
+     *
+     * @param records All habit's records
+     */
     private fun countTotalHabitCompleted(records: List<Record>) {
         var counter = 0
         records.forEach { record ->
@@ -133,14 +148,24 @@ class ProgressFragment : Fragment() {
         }
 
         binding.tvTotalCompleted.text = getString(R.string.total_completed_placeholder, counter)
-        animateViewVisibility(true, binding.cardTotalHabitCompleted)
+        binding.cardTotalHabitCompleted.animateVisibility(true)
     }
 
+    /**
+     * Count number of started habits and parse the data to related views
+     *
+     * @param habits List of habits
+     */
     private fun countStartedHabit(habits: List<Habit>) {
         binding.tvStartedHabit.text = getString(R.string.started_habit_placeholder, habits.size)
-        animateViewVisibility(true, binding.cardHabitInProgress)
+        binding.cardHabitInProgress.animateVisibility(true)
     }
 
+    /**
+     * Count daily average of completed habits and parse the information to related views
+     *
+     * @param records List of records
+     */
     private fun countDailyAverage(records: List<Record>) {
         var daysCounter = 0
         var completedHabitCounter = 0
@@ -168,9 +193,14 @@ class ProgressFragment : Fragment() {
 
         val avg = completedHabitCounter.toDouble() / daysCounter
         binding.tvAvgDaily.text = getString(R.string.double_placeholder, avg)
-        animateViewVisibility(true, binding.cardDailyAverage)
+        binding.cardDailyAverage.animateVisibility(true)
     }
 
+    /**
+     * Count completion rate of all habits and parse the data to related views
+     *
+     * @param records List of records
+     */
     private fun countCompletionRate(records: List<Record>) {
         val completedCounter =
             records.filter { it.isChecked && it.timestamp <= todayTimestamp }.size
@@ -179,9 +209,14 @@ class ProgressFragment : Fragment() {
         val string = "$completionRate %"
 
         binding.tvCompletionRate.text = string
-        animateViewVisibility(true, binding.cardCompletionRate)
+        binding.cardCompletionRate.animateVisibility(true)
     }
 
+    /**
+     * Parse information to the calendar views
+     *
+     * @param records List of records
+     */
     private fun parseCalendarHistory(records: List<Record>) {
 
         val checkedRecords = records.filter { it.isChecked }
@@ -285,6 +320,6 @@ class ProgressFragment : Fragment() {
             }
         }
 
-        animateViewVisibility(true, binding.calendarContainer)
+        binding.calendarContainer.animateVisibility(true)
     }
 }

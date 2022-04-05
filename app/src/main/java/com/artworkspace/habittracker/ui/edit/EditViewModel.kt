@@ -103,4 +103,10 @@ class EditViewModel @Inject constructor(private val habitRepository: HabitReposi
             habitRepository.updateHabitData(habit, weeklyTarget, reminderTime)
         }
     }
+
+    fun deleteHabitRecordBeforeTimestamp(habit: Habit, timestamp: Long) {
+        viewModelScope.launch {
+            habitRepository.deleteHabitRecordBefore(habit, timestamp)
+        }
+    }
 }

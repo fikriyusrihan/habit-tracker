@@ -17,36 +17,40 @@ class CreateHabitViewModel @Inject constructor(
     private val habitRepository: HabitRepository
 ) : ViewModel() {
 
-    private var _startAtTimestamp = MutableLiveData<Long>()
-    val startAtTimestamp: LiveData<Long> = _startAtTimestamp
+    private var _habitStartAtState = MutableLiveData<Long>()
+    val habitStartAtState: LiveData<Long> = _habitStartAtState
 
-    private var _reminder = MutableLiveData<ReminderTime>()
-    val reminder: LiveData<ReminderTime> = _reminder
+    private var _habitReminderTimeState = MutableLiveData<ReminderTime>()
+    val habitReminderTimeState: LiveData<ReminderTime> = _habitReminderTimeState
 
-    private var _checkedDays = MutableLiveData<BooleanArray>()
-    val checkedDays: LiveData<BooleanArray> = _checkedDays
+    private var _habitCheckedDaysState = MutableLiveData<BooleanArray>()
+    val habitCheckedDaysState: LiveData<BooleanArray> = _habitCheckedDaysState
 
-    private var _icon = MutableLiveData<Icon?>()
-    val icon: LiveData<Icon?> = _icon
+    private var _habitIconState = MutableLiveData<Icon?>()
+    val habitIconState: LiveData<Icon?> = _habitIconState
 
     init {
         val defaultReminderHour = 9
         val defaultReminderMinute = 0
 
-        _startAtTimestamp.value = todayTimestamp
-        _reminder.value = ReminderTime(
+        _habitStartAtState.value = todayTimestamp
+        _habitCheckedDaysState.value = booleanArrayOf(true, true, true, true, true, true, true)
+        _habitReminderTimeState.value = ReminderTime(
             hour = defaultReminderHour,
             minute = defaultReminderMinute
         )
-        _checkedDays.value = booleanArrayOf(true, true, true, true, true, true, true)
     }
 
     /**
      * Save new habit to database
+     *
+     * @param habit Habit to save
+     * @param checkedDays Checked days state to save
+     * @param reminderTime ReminderTime state to save
      */
     suspend fun saveNewHabit(
         habit: Habit,
-        weeklyTargetArray: BooleanArray?,
+        checkedDays: BooleanArray?,
         reminderTime: ReminderTime
     ): Long {
         val habitId = habitRepository.insertHabit(habit)
@@ -54,13 +58,13 @@ class CreateHabitViewModel @Inject constructor(
         val weeklyTarget = WeeklyTarget(
             id = null,
             habitId = habitId,
-            mon = weeklyTargetArray?.get(0) ?: true,
-            tue = weeklyTargetArray?.get(1) ?: true,
-            wed = weeklyTargetArray?.get(2) ?: true,
-            thu = weeklyTargetArray?.get(3) ?: true,
-            fri = weeklyTargetArray?.get(4) ?: true,
-            sat = weeklyTargetArray?.get(5) ?: true,
-            sun = weeklyTargetArray?.get(6) ?: true
+            mon = checkedDays?.get(0) ?: true,
+            tue = checkedDays?.get(1) ?: true,
+            wed = checkedDays?.get(2) ?: true,
+            thu = checkedDays?.get(3) ?: true,
+            fri = checkedDays?.get(4) ?: true,
+            sat = checkedDays?.get(5) ?: true,
+            sun = checkedDays?.get(6) ?: true
         )
 
         val reminder = ReminderTime(
@@ -78,30 +82,38 @@ class CreateHabitViewModel @Inject constructor(
 
     /**
      * Saving startAtTimestamp state from the UI
+     *
+     * @param startAtTimestamp StartAt state
      */
-    fun setStartAtTimestamp(timeInMillis: Long) {
-        _startAtTimestamp.value = timeInMillis
+    fun setHabitStartAtState(startAtTimestamp: Long) {
+        _habitStartAtState.value = startAtTimestamp
     }
 
     /**
      * Saving reminder state from the UI
+     *
+     * @param reminderTime ReminderTime state
      */
-    fun setReminderTime(time: ReminderTime) {
-        _reminder.value = time
+    fun setHabitReminderTimeState(reminderTime: ReminderTime) {
+        _habitReminderTimeState.value = reminderTime
     }
 
     /**
      * Saving checkedDays state from the UI
+     *
+     * @param checkedDays CheckedDays state
      */
-    fun setCheckedDays(checkedDays: BooleanArray?) {
+    fun setHabitCheckedDaysState(checkedDays: BooleanArray?) {
         val default = booleanArrayOf(true, true, true, true, true, true, true)
-        _checkedDays.value = checkedDays ?: default
+        _habitCheckedDaysState.value = checkedDays ?: default
     }
 
     /**
      * Saving icon state from the UI
+     *
+     * @param icon Icon state
      */
-    fun setIcon(icon: Icon?) {
-        _icon.value = icon
+    fun setHabitIconState(icon: Icon?) {
+        _habitIconState.value = icon
     }
 }

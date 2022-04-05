@@ -9,17 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.databinding.FragmentSettingsBinding
 
 class SettingsFragment : Fragment(), View.OnClickListener {
 
     private var _binding: FragmentSettingsBinding? = null
-    private val settingsViewModel: SettingsViewModel by viewModels()
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(

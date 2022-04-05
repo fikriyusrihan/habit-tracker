@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
+import androidx.lifecycle.lifecycleScope
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.data.entity.Habit
 import com.artworkspace.habittracker.data.entity.Record
@@ -27,6 +28,9 @@ import com.kizitonwose.calendarview.model.DayOwner
 import com.kizitonwose.calendarview.ui.DayBinder
 import com.kizitonwose.calendarview.ui.ViewContainer
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -44,8 +48,11 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var habit: Habit
     private lateinit var notificationReceiver: NotificationReceiver
 
-    private val detailViewModel: DetailViewModel by viewModels()
+    private var getHabitJob: Job = Job()
+    private var getHabitWeeklyTargetJob: Job = Job()
+    private var getHabitReminderTimeJob: Job = Job()
 
+    private val detailViewModel: DetailViewModel by viewModels()
     private val selectedDates = mutableSetOf<LocalDate>()
     private val today = LocalDate.now()
     private val monthTitleFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
@@ -60,7 +67,6 @@ class DetailActivity : AppCompatActivity() {
 
         // Initialize data to fetch
         detailViewModel.apply {
-            getWeeklyTarget(habit)
             getTotalCompleted(habit)
             getTotalAllRecord(habit)
         }
@@ -71,12 +77,8 @@ class DetailActivity : AppCompatActivity() {
             setDisplayShowHomeEnabled(true)
         }
 
-
         detailViewModel.apply {
             val observer = this@DetailActivity
-            weeklyTarget.observe(observer) { weeklyTarget ->
-                parseWeeklyTarget(weeklyTarget)
-            }
 
             totalCompleted.observe(observer) { totalCompleted ->
                 parseTotalCompleted(totalCompleted)
@@ -86,23 +88,39 @@ class DetailActivity : AppCompatActivity() {
                 parseCompletionRate(completionRate)
             }
 
-            getReminderTime(habit).observe(observer) { reminderTime ->
-                parseReminderTime(reminderTime)
-            }
-
             getAllHabitRecord(habit).observe(observer) { records ->
-                countCurrentStreak(records)
+                parseCurrentStreak(records)
                 parseCalendarHistory(records)
             }
         }
+    }
 
-        binding.toolbarLayout.title = habit.name
+    override fun onStart() {
+        super.onStart()
 
-        if (habit.description.isNotBlank()) {
-            binding.tvDescriptionStatus.visibility = View.VISIBLE
-            binding.tvHabitDescription.apply {
-                visibility = View.VISIBLE
-                text = habit.description
+        // Make sure only one job that running
+        if (getHabitJob.isActive) getHabitJob.cancel()
+        if (getHabitWeeklyTargetJob.isActive) getHabitJob.cancel()
+        if (getHabitReminderTimeJob.isActive) getHabitJob.cancel()
+
+        lifecycleScope.launchWhenStarted {
+            getHabitJob = launch {
+                detailViewModel.getHabit(habit).collect {
+                    parseHabitInformation(it)
+                    habit = it
+                }
+            }
+
+            getHabitWeeklyTargetJob = launch {
+                detailViewModel.getWeeklyTarget(habit).collect {
+                    parseWeeklyTarget(it)
+                }
+            }
+
+            getHabitReminderTimeJob = launch {
+                detailViewModel.getReminderTime(habit).collect {
+                    parseReminderTime(it)
+                }
             }
         }
     }
@@ -135,18 +153,43 @@ class DetailActivity : AppCompatActivity() {
         return true
     }
 
-    private fun parseWeeklyTarget(weeklyTarget: WeeklyTarget) {
+    /**
+     * Parse habit information to related views
+     *
+     * @param habit Habit to parse
+     */
+    private fun parseHabitInformation(habit: Habit?) {
+        binding.toolbarLayout.title = habit?.name
+
+        if (habit?.description?.isNotBlank() == true) {
+            binding.tvHabitDescription.apply {
+                text = habit.description
+            }
+
+            binding.tvHabitDescription.animateVisibility(true)
+            binding.tvDescriptionStatus.animateVisibility(true)
+        }
+
+        binding.toolbarLayout.animateVisibility(true)
+    }
+
+    /**
+     * Parse information from `weeklyTarget` that related to its `habit` to correspond views
+     *
+     * @param weeklyTarget WeeklyTarget to parse
+     */
+    private fun parseWeeklyTarget(weeklyTarget: WeeklyTarget?) {
         var isEveryday = true
         var string = ""
         val daysInWeek = arrayOf('M', 'T', 'W', 'T', 'F', 'S', 'S')
         val checkedDays = booleanArrayOf(
-            weeklyTarget.mon,
-            weeklyTarget.tue,
-            weeklyTarget.wed,
-            weeklyTarget.thu,
-            weeklyTarget.fri,
-            weeklyTarget.sat,
-            weeklyTarget.sun
+            weeklyTarget?.mon ?: false,
+            weeklyTarget?.tue ?: false,
+            weeklyTarget?.wed ?: false,
+            weeklyTarget?.thu ?: false,
+            weeklyTarget?.fri ?: false,
+            weeklyTarget?.sat ?: false,
+            weeklyTarget?.sun ?: false
         )
 
         checkedDays.forEachIndexed { index, checked ->
@@ -156,8 +199,15 @@ class DetailActivity : AppCompatActivity() {
 
         if (!isEveryday)
             binding.tvRepeatAt.text = string
+
+        binding.tvRepeatAt.animateVisibility(true)
     }
 
+    /**
+     * Parse ReminderTime information that related to its habit to correspond views
+     *
+     * @param reminderTime ReminderTime to parse
+     */
     private fun parseReminderTime(reminderTime: ReminderTime?) {
         if (reminderTime != null) {
             val sdf = SimpleDateFormat("h:mm a", Locale.ENGLISH)
@@ -168,22 +218,38 @@ class DetailActivity : AppCompatActivity() {
 
             binding.tvReminderAt.text = sdf.format(calendar.time)
         }
+
+        binding.tvReminderAt.animateVisibility(true)
     }
 
+    /**
+     * Parse total completed information to its correspond views
+     *
+     * @param totalCompleted Information to parse
+     */
     private fun parseTotalCompleted(totalCompleted: Int) {
         binding.tvTotalCompleted.text =
             getString(R.string.total_completed_placeholder, totalCompleted)
-        animateViewVisibility(true, binding.cardTotalCompleted)
+        binding.cardTotalCompleted.animateVisibility(true)
     }
 
+    /**
+     * Parse completion rate information to its correspond views
+     *
+     * @param completionRate Information to parse
+     */
     private fun parseCompletionRate(completionRate: Int) {
         val string = "$completionRate %"
         binding.tvCompletionRate.text = string
-        animateViewVisibility(true, binding.cardCompletionRate)
+        binding.cardCompletionRate.animateVisibility(true)
     }
 
+    /**
+     * Parse calendar history information to its correspond views (CalendarView)
+     *
+     * @param records Information to parse
+     */
     private fun parseCalendarHistory(records: List<Record>) {
-
         val checkedRecords = records.filter { it.isChecked }
         checkedRecords.forEach { record ->
             val calendar = Calendar.getInstance().also { it.timeInMillis = record.timestamp }
@@ -274,9 +340,34 @@ class DetailActivity : AppCompatActivity() {
             }
         }
 
-        animateViewVisibility(true, binding.calendarContainer)
+        binding.calendarContainer.animateVisibility(true)
     }
 
+    /**
+     * Parse current streak information to its correspond views
+     *
+     * @param habitRecords Information to parse
+     */
+    private fun parseCurrentStreak(habitRecords: List<Record>) {
+        var streakCounter = 0
+
+        for (i: Int in habitRecords.indices) {
+            if (!habitRecords[i].isChecked) {
+                if (!(habitRecords[i].timestamp == todayTimestamp || habitRecords[i].timestamp == tomorrowTimestamp)) break
+            } else {
+                streakCounter++
+            }
+        }
+
+        binding.tvCounterStreak.text = getString(R.string.streak_counter, streakCounter)
+        binding.cardStreak.animateVisibility(true)
+    }
+
+    /**
+     * Delete a habit from database
+     *
+     * @param habit Habit to delete
+     */
     private fun deleteHabit(habit: Habit) {
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.are_you_sure))
@@ -289,21 +380,6 @@ class DetailActivity : AppCompatActivity() {
                 finish()
             }
             .show()
-    }
-
-    private fun countCurrentStreak(habitRecords: List<Record>) {
-        var streakCounter = 0
-
-        for (i: Int in habitRecords.indices) {
-            if (!habitRecords[i].isChecked) {
-                if (!(habitRecords[i].timestamp == todayTimestamp || habitRecords[i].timestamp == tomorrowTimestamp)) break
-            } else {
-                streakCounter++
-            }
-        }
-
-        binding.tvCounterStreak.text = getString(R.string.streak_counter, streakCounter)
-        animateViewVisibility(true, binding.cardStreak)
     }
 
     companion object {

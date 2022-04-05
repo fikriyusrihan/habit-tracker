@@ -1,6 +1,9 @@
 package com.artworkspace.habittracker.utils
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.Context
+import android.view.View
 import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
@@ -16,16 +19,9 @@ val LocalDate.yearMonth: YearMonth
 val YearMonth.next: YearMonth
     get() = this.plusMonths(1)
 
-internal fun Context.getColorCompat(@ColorRes color: Int) = ContextCompat.getColor(this, color)
-
-internal fun TextView.setTextColorRes(@ColorRes color: Int) =
-    setTextColor(context.getColorCompat(color))
-
 fun daysOfWeekFromLocale(): Array<DayOfWeek> {
     val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
     var daysOfWeek = DayOfWeek.values()
-    // Order `daysOfWeek` array so that firstDayOfWeek is at index 0.
-    // Only necessary if firstDayOfWeek != DayOfWeek.MONDAY which has ordinal 0.
     if (firstDayOfWeek != DayOfWeek.MONDAY) {
         val rhs = daysOfWeek.sliceArray(firstDayOfWeek.ordinal..daysOfWeek.indices.last)
         val lhs = daysOfWeek.sliceArray(0 until firstDayOfWeek.ordinal)
@@ -33,3 +29,38 @@ fun daysOfWeekFromLocale(): Array<DayOfWeek> {
     }
     return daysOfWeek
 }
+
+
+/**
+ * Animate view's visibility with crossfade effect
+ *
+ * @param isVisible visibility setting
+ */
+fun View.animateVisibility(isVisible: Boolean) {
+    if (isVisible) {
+        this.apply {
+            alpha = 0f
+            visibility = View.VISIBLE
+
+            animate()
+                .alpha(1f)
+                .setDuration(200L)
+                .setListener(null)
+        }
+
+    } else {
+        this.animate()
+            .alpha(0f)
+            .setDuration(200L)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    this@animateVisibility.visibility = View.GONE
+                }
+            })
+    }
+}
+
+internal fun Context.getColorCompat(@ColorRes color: Int) = ContextCompat.getColor(this, color)
+
+internal fun TextView.setTextColorRes(@ColorRes color: Int) =
+    setTextColor(context.getColorCompat(color))

@@ -69,7 +69,7 @@
     <string name="running">Running</string>
     <string name="not_completed">Not completed</string>
     <string name="done">Done</string>
-    <string name="please_create_a_new_habit">No Habit Here</string>
+    <string name="please_create_a_new_habit">No Habit Here \nLet\'s create a new one</string>
     <string name="success">Success</string>
     <string name="completed">Completed</string>
     <string name="undo">Undo</string>
@@ -87,7 +87,7 @@
     <string name="cancel">Cancel</string>
     <string name="streak_counter">%d days</string>
     <string name="description">Description</string>
-    <string name="reminder_notification_title">Don\'t lose your momentum🚀</string>
+    <string name="reminder_notification_title">Don\'t lose your momentum 🚀</string>
     <string name="reminder_notification_message">Let\'s build and track %s habit</string>
     <string name="habit_lowercase">habit</string>
     <string name="in_progress">In progress</string>

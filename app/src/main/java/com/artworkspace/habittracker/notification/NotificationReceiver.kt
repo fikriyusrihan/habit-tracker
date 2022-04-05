@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.artworkspace.habittracker.R
 import com.artworkspace.habittracker.data.HabitRepository
@@ -28,6 +27,8 @@ class NotificationReceiver : BroadcastReceiver() {
         val id = intent.getIntExtra(EXTRA_ID, ID_REPEATING)
         val title = intent.getStringExtra(EXTRA_TITLE)
 
+        // Validate the habit's weekly target
+        // If at this time this habit is not repeated, then notification will be not send
         runBlocking {
             val habit = habitRepository.getHabitById(id.toLong())
             if (habit != null) {
@@ -39,6 +40,10 @@ class NotificationReceiver : BroadcastReceiver() {
 
     /**
      * Setting up reminder notification by creating alarm manager with daily interval
+     *
+     * @param context context to pass
+     * @param habit habit that related with this notification
+     * @param timeInMillis first time for this notification triggered
      */
     fun setReminderNotification(context: Context, habit: Habit, timeInMillis: Long) {
         val intent = Intent(context, NotificationReceiver::class.java).also {
@@ -64,6 +69,10 @@ class NotificationReceiver : BroadcastReceiver() {
 
     /**
      * Send notification to the users
+     *
+     * @param context context to pass
+     * @param id notification's id
+     * @param title notification's title
      */
     private fun showReminderNotification(context: Context, id: Int, title: String?) {
         val intent = Intent(context, MainActivity::class.java)
@@ -73,7 +82,6 @@ class NotificationReceiver : BroadcastReceiver() {
             intent,
             PendingIntent.FLAG_IMMUTABLE
         )
-
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val builder = NotificationCompat.Builder(
@@ -91,17 +99,15 @@ class NotificationReceiver : BroadcastReceiver() {
             )
             .setAutoCancel(true)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            channel.description = CHANNEL_NAME
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        channel.description = CHANNEL_NAME
 
-            builder.setChannelId(CHANNEL_ID)
-            notificationManager.createNotificationChannel(channel)
-        }
+        builder.setChannelId(CHANNEL_ID)
+        notificationManager.createNotificationChannel(channel)
 
         val notification = builder.build()
         notificationManager.notify(id, notification)
@@ -109,6 +115,9 @@ class NotificationReceiver : BroadcastReceiver() {
 
     /**
      * Cancel the alarm manager
+     *
+     * @param context context to pass
+     * @param habit habit that's related with a notification
      */
     fun cancelAlarm(context: Context, habit: Habit) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
